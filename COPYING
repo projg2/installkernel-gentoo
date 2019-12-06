@@ -1,0 +1,16 @@
+This script was extracted from debianutils.  It was subsequenly modified
+for Gentoo by Michał Górny.
+
+[excerpt from debian/copyright]
+
+This is the Debian GNU/Linux package debianutils.
+
+It is an original Debian package.  Programs in it were maintained by
+Guy Maor <maor@debian.org>, and are now maintained by Clint Adams
+<schizo@debian.org>.
+
+All its programs except savelog, and which may be
+redistributed under the terms of the GNU GPL, Version 2 or later,
+found on Debian systems in the file /usr/share/common-licenses/GPL.
+
+which is in the public domain.

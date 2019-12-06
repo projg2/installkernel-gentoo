@@ -1,0 +1,25 @@
+.TH INSTALLKERNEL 8 "7 Jan 2001" "Debian Linux"
+.SH NAME
+installkernel \- install a new kernel image
+.SH SYNOPSIS
+.BI "installkernel " "version zImage System.map [directory]"
+.SH DESCRIPTION
+.PP
+.B installkernel
+installs a new kernel image onto the system from the Linux source
+tree.  It is called by the Linux kernel makefiles when
+.B make install
+is invoked there.
+.P
+The new kernel is installed into
+.IR {directory}/vmlinuz-{version} .
+If a symbolic link 
+.I {directory}/vmlinuz
+already exists, it is refreshed by making a link from
+.I {directory}/vmlinuz
+to the new kernel, and the previously installed kernel is available as
+.IR {directory}/vmlinuz.old .
+.SH BUGS
+installkernel resides in /sbin only because the Linux kernel makefiles
+call it from there.  It should really be in /usr/sbin.  It isn't
+needed to boot a system.
