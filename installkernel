@@ -77,6 +77,14 @@ if [ -f "$config" ] ; then
   updatever config "$config"
 fi
 
+# use the same path as /usr/lib/kernel/install.d/50-dracut.install
+# expects for best interoperability
+initrd=$(dirname "$img")
+initrd="${initrd}/initrd"
+if [ -f "$initrd" ] ; then
+  updatever initrd "$initrd"
+fi
+
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
