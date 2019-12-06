@@ -1,4 +1,4 @@
-.TH INSTALLKERNEL 8 "7 Jan 2001" "Debian Linux"
+.TH INSTALLKERNEL 8 "2019-12-06" "Gentoo Linux"
 .SH NAME
 installkernel \- install a new kernel image
 .SH SYNOPSIS
@@ -19,6 +19,15 @@ already exists, it is refreshed by making a link from
 .I {directory}/vmlinuz
 to the new kernel, and the previously installed kernel is available as
 .IR {directory}/vmlinuz.old .
+.P
+In addition to that,
+.I System.map
+passed on the command-line is installed using the same logic.
+If the directory containing
+.I System.map
+contains
+.I .config
+file, it is also installed.
 .SH BUGS
 installkernel resides in /sbin only because the Linux kernel makefiles
 call it from there.  It should really be in /usr/sbin.  It isn't
