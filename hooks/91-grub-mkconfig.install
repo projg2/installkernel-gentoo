@@ -6,12 +6,12 @@
 
 # familliar helpers, we intentionally don't use gentoo functions.sh
 die() {
-	echo -e "${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
 	exit 1
 }
 
 einfo() {
-        echo -e "${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+        echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
 }
 
 main() {
