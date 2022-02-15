@@ -1,5 +1,5 @@
 #!/bin/sh
-# 
+#
 # Copyright (C) 1995 - 1998, Ian A. Murdock <imurdock@debian.org>
 # Copyright (C) 1998, 1999, Guy Maor
 # Copyright (C) 2002, Matthew Wilcox
@@ -93,5 +93,5 @@ if [ "$dir" = "/boot" ]; then
     run-parts --verbose --exit-on-error --arg="$ver" --arg="$dir/$img_dest-$ver" \
     /etc/kernel/postinst.d
 fi
- 
+
 exit 0
