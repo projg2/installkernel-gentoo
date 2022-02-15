@@ -4,7 +4,7 @@
 
 : "${GRUB_CFG:=/boot/grub/grub.cfg}"
 
-# familliar helpers, we intentionally don't use gentoo functions.sh
+# familiar helpers, we intentionally don't use gentoo functions.sh
 die() {
 	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
 	exit 1
