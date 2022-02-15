@@ -49,7 +49,7 @@ updatever () {
     if test -L "$dir/$1$3" ; then
         # If we were using links, continue to use links, updating if
         # we need to.
-        if [ "$(readlink -f ${dir}/${1}$3)" = "${dir}/${1}-${ver}$3" ]; then
+        if [ "$(readlink -f "${dir}/${1}$3")" = "${dir}/${1}-${ver}$3" ]; then
             # Yup, we need to change
             ln -sf "$1-$ver$3.old" "$dir/$1$3.old"
         else
@@ -63,7 +63,7 @@ updatever () {
   fi
 }
 
-if [ "$(basename $img)" = "vmlinux" ] ; then
+if [ "$(basename "$img")" = "vmlinux" ] ; then
   img_dest=vmlinux
 else
   img_dest=vmlinuz
