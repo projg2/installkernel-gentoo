@@ -69,34 +69,53 @@ updatever () {
   fi
 }
 
+# If installing in the usual directory, run the same scripts that hook
+# into kernel package installation.  Also make sure the PATH includes
+# /usr/sbin and /sbin, just as dpkg would.
+if [ "${dir}" = "/boot" ]; then
+  PATH="${PATH}:/usr/sbin:/sbin" \
+    run-parts --verbose --exit-on-error --arg="${ver}" --arg="${img}" \
+    /etc/kernel/preinst.d
+fi
+
+# use the same input path as /usr/lib/kernel/install.d/50-dracut.install
+# and the same output path as dracut and genkernel-4 for best interop
+base_dir=$(dirname "${img}")
+initrd=${base_dir}/initrd
+uki=${base_dir}/uki.efi
+
 if [ "$(basename "$img")" = "vmlinux" ] ; then
   img_dest=vmlinux
 else
   img_dest=vmlinuz
 fi
-updatever $img_dest "$img"
-updatever System.map "$map"
 
-config=$(dirname "$map")
-config="${config}/.config"
-if [ -f "$config" ] ; then
-  updatever config "$config"
+# If we found a uki.efi, install it instead of kernel+initrd
+if [ -f ${uki} ]; then
+  suffix=.efi
+  updatever ${img_dest} "${uki}" ${suffix}
+else
+  suffix=
+  updatever ${img_dest} "${img}"
+  if [ -f "${initrd}" ] ; then
+    updatever initramfs "${initrd}" .img
+  fi
 fi
 
-# use the same input path as /usr/lib/kernel/install.d/50-dracut.install
-# and the same output path as dracut and genkernel-4 for best interop
-initrd=$(dirname "$img")
-initrd="${initrd}/initrd"
-if [ -f "$initrd" ] ; then
-  updatever initramfs "$initrd" .img
+updatever System.map "${map}"
+
+config=$(dirname "${map}")
+config="${config}/.config"
+if [ -f "${config}" ] ; then
+  updatever config "${config}"
 fi
 
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
-if [ "$dir" = "/boot" ]; then
-  PATH="$PATH:/usr/sbin:/sbin" \
-    run-parts --verbose --exit-on-error --arg="$ver" --arg="$dir/$img_dest-$ver" \
+if [ "${dir}" = "/boot" ]; then
+  PATH="${PATH}:/usr/sbin:/sbin" \
+    run-parts --verbose --exit-on-error --arg="${ver}" --arg="${dir}/${img_dest}-${ver}${suffix}" \
     /etc/kernel/postinst.d
 fi
 
