@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# this file is installed by sys-kernel/installkernel-gentoo
+
+ver=${1}
+img=${2}
+initrd=${img%/*}/initrd
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
+ewarn() {
+	echo -e " ${NOCOLOR-\e[1;33m*\e[0m }${*}" >&2
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	# do nothing if somehow dracut is not installed
+	[[ -x $(command -v dracut) ]] || { ewarn "dracut is not installed" && exit 0 ; }
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	initramfs_gen_args=(
+		--force
+		--verbose
+		# if uefi=yes is used, dracut needs to locate the kernel image
+		--kernel-image "${img}"
+
+		# positional arguments
+		"${initrd}" "${ver}"
+		)
+
+	dracut "${initramfs_gen_args[@]}" || die "Failed to generate initramfs"
+
+	# if dracut is used in uefi=yes mode, initrd will actually
+	# be a combined kernel+initramfs UEFI executable.  we can easily
+	# recognize it by PE magic (vs cpio for a regular initramfs)
+	[[ -s ${initrd} ]] && read -n 2 magic < "${initrd}"
+	if [[ ${magic} == MZ ]]; then
+		einfo "Combined UEFI kernel+initramfs executable found"
+		# install the combined executable in place of kernel
+		uki=${initrd%/*}/uki.efi
+		mv "${initrd}" "${uki}" || die "Failed to rename initramfs"
+	fi
+}
+
+main

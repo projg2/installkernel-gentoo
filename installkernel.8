@@ -11,7 +11,9 @@ tree.  It is called by the Linux kernel makefiles when
 .B make install
 is invoked there.
 .P
-The new kernel is installed into
+If the new kernel is an unified kernel image, it is installed into
+.IR {directory}/vmlinuz-{version}.efi .
+Otherwise, the new kernel is installed into
 .IR {directory}/vmlinuz-{version} .
 If a symbolic link
 .I {directory}/vmlinuz

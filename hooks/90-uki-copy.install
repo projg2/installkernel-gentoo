@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# this file is installed by sys-kernel/installkernel-gentoo
+
+ver=${1}
+img=${2}
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	# Do nothing if the image we installed is not an EFI executable
+	[[ ${img} == *.efi ]] || exit 0
+
+	# When we have installed a UKI, copy it to the ESP. Some bootloaders
+	# can auto-discover installed efi executables in EFI/Linux. And having
+	# the UKI on the ESP is also required for EFI stub booting.
+	# Use the same potential ESP mounting locations as eclean-kernel.
+	for dir in /boot/EFI /boot/efi /boot /efi; do
+		if [[ -d "${dir}/EFI/Linux" ]]; then
+				local image_path="${dir}/EFI/Linux/gentoo-$(basename ${img#*-})"
+				einfo "Installing UKI to ${image_path}"
+				if [[ -f "${image_path}" ]]; then
+					mv "${image_path}" "${image_path%.efi}-old.efi" || die "Failed to move existing UKI"
+				fi
+				mv "${img}" "${image_path}" || die "Failed to install UKI"
+			break
+		else
+			continue
+		fi
+	done
+}
+
+main

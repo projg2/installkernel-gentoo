@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# this file is installed by sys-kernel/installkernel-gentoo
+
+ver=${1}
+img=${2}
+initrd=${img%/*}/initrd
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+ewarn() {
+	echo -e " ${NOCOLOR-\e[1;33m*\e[0m }${*}" >&2
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	# do nothing if somehow ukify is not installed
+	[[ -x $(command -v /usr/lib/systemd/ukify) ]] || { ewarn "ukify is not installed" && exit 0 ; }
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	ukify_gen_args=(
+		build
+		--linux="${img}"
+		--uname="${ver}"
+		--output="${initrd%/*}/uki.efi"
+		)
+
+	[[ -f "${initrd}" ]] && ukify_gen_args+=( --initrd="${initrd}" )
+
+	if [[ ${SECUREBOOT_SIGN_KEY} == pkcs11:* ]]; then
+		ukify_gen_args+=(
+			--secureboot-private-key="${SECUREBOOT_SIGN_KEY}"
+			--signing-engine=pkcs11
+		)
+	elif [[ -r ${SECUREBOOT_SIGN_KEY} ]]; then
+		ukify_gen_args+=(
+			--secureboot-private-key="${SECUREBOOT_SIGN_KEY}"
+		)
+	fi
+
+	if [[ -r ${SECUREBOOT_SIGN_CERT} ]]; then
+		ukify_gen_args+=(
+			--signtool=sbsign
+			--secureboot-certificate="${SECUREBOOT_SIGN_CERT}"
+		)
+	fi
+
+	/usr/lib/systemd/ukify "${ukify_gen_args[@]}" || die "Failed to generate UKI"
+}
+
+main
