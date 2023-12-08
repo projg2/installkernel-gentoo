@@ -4,7 +4,6 @@
 
 ver=${1}
 img=${2}
-initrd=${img%/*}/initrd
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -12,8 +11,21 @@ die() {
 	exit 1
 }
 
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
 ewarn() {
 	echo -e " ${NOCOLOR-\e[1;33m*\e[0m }${*}" >&2
+}
+
+find_config_file() {
+	file=${1}
+	if [[ -f "/etc/kernel/${file}" ]]; then
+		echo "/etc/kernel/${file}"
+	elif [[ -f "/usr/lib/kernel/${file}" ]]; then
+		echo "/usr/lib/kernel/${file}"
+	fi
 }
 
 main() {
@@ -29,14 +41,35 @@ main() {
 		build
 		--linux="${img}"
 		--uname="${ver}"
-		--output="${initrd%/*}/uki.efi"
+		--output="${img%/*}/uki.efi"
 		)
 
+	initrd=${img%/*}/initrd
 	[[ -f "${initrd}" ]] && ukify_gen_args+=( --initrd="${initrd}" )
+
+	# Use the same files as installkernel-systemd's 60-ukify.install
+	cmdline=$(find_config_file cmdline)
+	[[ "${cmdline}" ]] && ukify_gen_args+=( --cmdline=@"${cmdline}" )
+
+	ukiconf=$(find_config_file uki.conf)
+	[[ "${ukiconf}" ]] && ukify_gen_args+=( --config="${ukiconf}" )
+
+	devicetree_config=$(find_config_file devicetree)
+	if [[ "${devicetree_config}" ]]; then
+		devicetree_path=$(cat "${devicetree_config}")
+		if [[ -f "/usr/lib/firmware/${ver}/device-tree/${devicetree_path}" ]]; then
+			ukify_gen_args+=( --devicetree="/usr/lib/firmware/${ver}/device-tree/${devicetree_path}" )
+		elif [[ -f "/usr/lib/linux-image-${ver}/${devicetree_path}" ]]; then
+			ukify_gen_args+=( --devicetree="/usr/lib/linux-image-${ver}/${devicetree_path}" )
+		elif [[ -f "/usr/lib/modules/${ver}/dtb/${devicetree_path}" ]]; then
+			ukify_gen_args+=( --devicetree="/usr/lib/modules/${ver}/dtb/${devicetree_path}" )
+		fi
+	fi
 
 	if [[ ${SECUREBOOT_SIGN_KEY} == pkcs11:* ]]; then
 		ukify_gen_args+=(
 			--secureboot-private-key="${SECUREBOOT_SIGN_KEY}"
+			--signtool=sbsign
 			--signing-engine=pkcs11
 		)
 	elif [[ -r ${SECUREBOOT_SIGN_KEY} ]]; then
@@ -47,11 +80,11 @@ main() {
 
 	if [[ -r ${SECUREBOOT_SIGN_CERT} ]]; then
 		ukify_gen_args+=(
-			--signtool=sbsign
 			--secureboot-certificate="${SECUREBOOT_SIGN_CERT}"
 		)
 	fi
 
+	einfo "Calling ukify with arguments: ${ukify_gen_args[@]}"
 	/usr/lib/systemd/ukify "${ukify_gen_args[@]}" || die "Failed to generate UKI"
 }
 
