@@ -33,7 +33,13 @@ main() {
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
 	# do nothing if somehow ukify is not installed
-	[[ -x $(command -v /usr/lib/systemd/ukify) ]] || { ewarn "ukify is not installed" && exit 0 ; }
+	if [[ -x /usr/lib/systemd/ukify ]]; then
+		ukify=/usr/lib/systemd/ukify
+	elif [[ -x /lib/systemd/ukify ]]; then
+		ukify=/lib/systemd/ukify
+	else
+		ewarn "ukify is not installed" && exit 0
+	fi
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
@@ -85,7 +91,7 @@ main() {
 	fi
 
 	einfo "Calling ukify with arguments: ${ukify_gen_args[@]}"
-	/usr/lib/systemd/ukify "${ukify_gen_args[@]}" || die "Failed to generate UKI"
+	${ukify} "${ukify_gen_args[@]}" || die "Failed to generate UKI"
 }
 
 main
