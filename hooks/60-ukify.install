@@ -3,9 +3,8 @@
 # this file is installed by sys-kernel/installkernel-gentoo
 
 ver=${1}
-# ./ is required because of ${img%/*} substitutions on arches where the
-# kernel image is not in a subdir.
-img=./${2}
+img=${2}
+basedir=$(dirname "${img}")
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -49,10 +48,10 @@ main() {
 		build
 		--linux="${img}"
 		--uname="${ver}"
-		--output="${img%/*}/uki.efi"
+		--output="${basedir}/uki.efi"
 		)
 
-	initrd=${img%/*}/initrd
+	initrd="${basedir}/initrd"
 	[[ -f "${initrd}" ]] && ukify_gen_args+=( --initrd="${initrd}" )
 
 	# Use the same files as installkernel-systemd's 60-ukify.install

@@ -3,10 +3,9 @@
 # this file is installed by sys-kernel/installkernel-gentoo
 
 ver=${1}
-# ./ is required because of ${img%/*} substitutions on arches where the
-# kernel image is not in a subdir.
-img=./${2}
-initrd=${img%/*}/initrd
+img=${2}
+basedir=$(dirname "${img}")
+initrd="${basedir}/initrd"
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -50,7 +49,7 @@ main() {
 	if [[ ${magic} == MZ ]]; then
 		einfo "Combined UEFI kernel+initramfs executable found"
 		# install the combined executable in place of kernel
-		uki=${initrd%/*}/uki.efi
+		uki="${basedir}/uki.efi"
 		mv "${initrd}" "${uki}" || die "Failed to rename initramfs"
 	fi
 }
