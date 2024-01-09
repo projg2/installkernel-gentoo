@@ -3,7 +3,9 @@
 # this file is installed by sys-kernel/installkernel-gentoo
 
 ver=${1}
-img=${2}
+# ./ is required because of ${img%/*} substitutions on arches where the
+# kernel image is not in a subdir.
+img=./${2}
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
