@@ -43,14 +43,14 @@ if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
 				cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" || exit 1
 				INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
 				if [[ -f ${INITRD} ]]; then
-					cp "${INITRD}" "${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}" || exit 1
+					cp "${INITRD}" "${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 				fi
 			fi
 		elif [[ ${COMMAND} == remove ]]; then
 			rm -f \
 				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" \
 				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" \
-				"${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}" || exit 1
+				"${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 		fi
 	fi
 
