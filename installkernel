@@ -13,6 +13,10 @@
 # from a generic kernel source tree, and the image will be installed to
 # the proper place for Debian GNU/Linux.
 
+if command -v kernel-install > /dev/null; then
+	exec kernel-install add --verbose "${1}" "${2}"
+fi
+
 set -e
 
 # Parse the command line options.  Of course, powerpc has to be all
@@ -20,9 +24,9 @@ set -e
 # "special". We ignore the fifth argument, and do not flag is as an
 # error, which it would be for any arch apart from powerpc
 if [ ${#} -eq 3 ] || [ ${#} -eq 4 ] || [ ${#} -eq 5 ]; then
+	ver="${1}"
 	img="${2}"
 	map="${3}"
-	ver="${1}"
 	if [ ${#} -ge 4 ] && [ -n "${4}" ]; then
 		dir="${4}"
 	else
