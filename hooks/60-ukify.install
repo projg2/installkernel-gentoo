@@ -39,7 +39,7 @@ main() {
 	elif [[ -x /lib/systemd/ukify ]]; then
 		ukify=/lib/systemd/ukify
 	else
-		ewarn "ukify is not installed" && exit 0
+		ewarn "ukify is not installed, not generating an UKI" && exit 0
 	fi
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
