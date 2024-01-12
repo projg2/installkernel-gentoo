@@ -27,13 +27,13 @@ main() {
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
 	# do nothing if somehow GRUB is not installed
-	[[ -x $(command -v grub-mkconfig) ]] || { ewarn "grub-mkconfig command not available" && exit 0 ; }
+	[[ -x $(command -v grub-mkconfig) ]] || { ewarn "grub-mkconfig command not available" && exit 0; }
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
 	if [[ -f ${GRUB_CFG} ]]; then
-        einfo "Backing up existing grub config as ${GRUB_CFG}~"
-        cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
+		einfo "Backing up existing grub config as ${GRUB_CFG}~"
+		cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
 	fi
 
 	einfo "Generating new GRUB config as ${GRUB_CFG}"

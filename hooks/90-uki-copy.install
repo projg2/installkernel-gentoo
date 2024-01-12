@@ -30,12 +30,12 @@ main() {
 	# Use the same potential ESP mounting locations as eclean-kernel.
 	for dir in /boot/EFI /boot/efi /boot /efi; do
 		if [[ -d "${dir}/EFI/Linux" ]]; then
-				local image_path="${dir}/EFI/Linux/gentoo-$(basename ${img#*-})"
-				einfo "Installing UKI to ${image_path}"
-				if [[ -f "${image_path}" ]]; then
-					mv "${image_path}" "${image_path%.efi}-old.efi" || die "Failed to move existing UKI"
-				fi
-				mv "${img}" "${image_path}" || die "Failed to install UKI"
+			local image_path="${dir}/EFI/Linux/gentoo-$(basename ${img#*-})"
+			einfo "Installing UKI to ${image_path}"
+			if [[ -f ${image_path} ]]; then
+				mv "${image_path}" "${image_path%.efi}-old.efi" || die "Failed to move existing UKI"
+			fi
+			mv "${img}" "${image_path}" || die "Failed to install UKI"
 			break
 		else
 			continue

@@ -26,7 +26,7 @@ main() {
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
 	# do nothing if somehow dracut is not installed
-	[[ -x $(command -v dracut) ]] || { ewarn "dracut is not installed" && exit 0 ; }
+	[[ -x $(command -v dracut) ]] || { ewarn "dracut is not installed" && exit 0; }
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
@@ -38,14 +38,14 @@ main() {
 
 		# positional arguments
 		"${initrd}" "${ver}"
-		)
+	)
 
 	dracut "${initramfs_gen_args[@]}" || die "Failed to generate initramfs"
 
 	# if dracut is used in uefi=yes mode, initrd will actually
 	# be a combined kernel+initramfs UEFI executable.  we can easily
 	# recognize it by PE magic (vs cpio for a regular initramfs)
-	[[ -s ${initrd} ]] && read -n 2 magic < "${initrd}"
+	[[ -s ${initrd} ]] && read -n 2 magic <"${initrd}"
 	if [[ ${magic} == MZ ]]; then
 		einfo "Combined UEFI kernel+initramfs executable found"
 		# install the combined executable in place of kernel

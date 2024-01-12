@@ -49,27 +49,27 @@ main() {
 		--linux="${img}"
 		--uname="${ver}"
 		--output="${basedir}/uki.efi"
-		)
+	)
 
 	initrd="${basedir}/initrd"
-	[[ -f "${initrd}" ]] && ukify_gen_args+=( --initrd="${initrd}" )
+	[[ -f ${initrd} ]] && ukify_gen_args+=(--initrd="${initrd}")
 
 	# Use the same files as installkernel-systemd's 60-ukify.install
 	cmdline=$(find_config_file cmdline)
-	[[ "${cmdline}" ]] && ukify_gen_args+=( --cmdline=@"${cmdline}" )
+	[[ "${cmdline}" ]] && ukify_gen_args+=(--cmdline=@"${cmdline}")
 
 	ukiconf=$(find_config_file uki.conf)
-	[[ "${ukiconf}" ]] && ukify_gen_args+=( --config="${ukiconf}" )
+	[[ "${ukiconf}" ]] && ukify_gen_args+=(--config="${ukiconf}")
 
 	devicetree_config=$(find_config_file devicetree)
 	if [[ "${devicetree_config}" ]]; then
 		devicetree_path=$(cat "${devicetree_config}")
 		if [[ -f "/usr/lib/firmware/${ver}/device-tree/${devicetree_path}" ]]; then
-			ukify_gen_args+=( --devicetree="/usr/lib/firmware/${ver}/device-tree/${devicetree_path}" )
+			ukify_gen_args+=(--devicetree="/usr/lib/firmware/${ver}/device-tree/${devicetree_path}")
 		elif [[ -f "/usr/lib/linux-image-${ver}/${devicetree_path}" ]]; then
-			ukify_gen_args+=( --devicetree="/usr/lib/linux-image-${ver}/${devicetree_path}" )
+			ukify_gen_args+=(--devicetree="/usr/lib/linux-image-${ver}/${devicetree_path}")
 		elif [[ -f "/usr/lib/modules/${ver}/dtb/${devicetree_path}" ]]; then
-			ukify_gen_args+=( --devicetree="/usr/lib/modules/${ver}/dtb/${devicetree_path}" )
+			ukify_gen_args+=(--devicetree="/usr/lib/modules/${ver}/dtb/${devicetree_path}")
 		fi
 	fi
 
@@ -91,7 +91,7 @@ main() {
 		)
 	fi
 
-	einfo "Calling ukify with arguments: ${ukify_gen_args[@]}"
+	einfo "Calling ukify with arguments: ${ukify_gen_args[*]}"
 	${ukify} "${ukify_gen_args[@]}" || die "Failed to generate UKI"
 }
 

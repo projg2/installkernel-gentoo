@@ -19,63 +19,63 @@ set -e
 # different, and passes in a fifth argument, just because it is
 # "special". We ignore the fifth argument, and do not flag is as an
 # error, which it would be for any arch apart from powerpc
-if [ $# -eq 3 ] || [ $# -eq 4 ] || [ $# -eq 5 ] ; then
-  img="$2"
-  map="$3"
-  ver="$1"
-  if [ $# -ge 4 ] && [ -n "$4" ] ; then
-      dir="$4"
-  else
-      dir="/boot"
-  fi
+if [ ${#} -eq 3 ] || [ ${#} -eq 4 ] || [ ${#} -eq 5 ]; then
+	img="${2}"
+	map="${3}"
+	ver="${1}"
+	if [ ${#} -ge 4 ] && [ -n "${4}" ]; then
+		dir="${4}"
+	else
+		dir="/boot"
+	fi
 else
-  echo "Usage: installkernel <version> <image> <System.map> <directory>"
-  exit 1
+	echo "Usage: installkernel <version> <image> <System.map> <directory>"
+	exit 1
 fi
 
 # Create backups of older versions before installing
-updatever () {
-  if [ -f "$dir/$1-$ver$3" ] ; then
-    # If they are hardlinked together, mv will fail.
-    rm -f "$dir/$1-$ver$3.old"
-    mv "$dir/$1-$ver$3" "$dir/$1-$ver$3.old"
-  fi
+updatever() {
+	if [ -f "${dir}/${1}-${ver}${3}" ]; then
+		# If they are hardlinked together, mv will fail.
+		rm -f "${dir}/${1}-${ver}${3}.old"
+		mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}${3}.old"
+	fi
 
-  cat "$2" > "$dir/$1-$ver$3"
+	cat "${2}" >"${dir}/${1}-${ver}${3}"
 
-  # This section is for backwards compatibility only
-  if test -f "$dir/$1$3" || test -L "$dir/$1$3" ; then
-    # The presence of "$dir/$1$3" is unusual in modern installations, and
-    # the results are mostly unused.  So only recreate them if they
-    # already existed.
-    if test -L "$dir/$1$3" ; then
-        # If we were using links, continue to use links, updating if
-        # we need to.
-        if [ "$(readlink -f "${dir}/${1}$3")" = "${dir}/${1}-${ver}$3" ]; then
-            # Yup, we need to change
-            ln -sf "$1-$ver$3.old" "$dir/$1$3.old"
-        else
-            # If they are hardlinked together, mv will fail.
-            rm -f "$dir/$1$3.old"
-            mv "$dir/$1$3" "$dir/$1$3.old"
-        fi
-        ln -sf "$1-$ver$3" "$dir/$1$3"
-    else                        # No links
-        # If they are hardlinked together, mv will fail.
-        rm -f "$dir/$1$3.old"
-        mv "$dir/$1$3" "$dir/$1$3.old"
-        cat "$2" > "$dir/$1$3"
-    fi
-  fi
+	# This section is for backwards compatibility only
+	if test -f "${dir}/${1}${3}" || test -L "${dir}/${1}${3}"; then
+		# The presence of "${dir}/${1}${3}" is unusual in modern installations, and
+		# the results are mostly unused.  So only recreate them if they
+		# already existed.
+		if test -L "${dir}/${1}${3}"; then
+			# If we were using links, continue to use links, updating if
+			# we need to.
+			if [ "$(readlink -f "${dir}/${1}${3}")" = "${dir}/${1}-${ver}${3}" ]; then
+				# Yup, we need to change
+				ln -sf "${1}-${ver}${3}.old" "${dir}/${1}${3}.old"
+			else
+				# If they are hardlinked together, mv will fail.
+				rm -f "${dir}/${1}${3}.old"
+				mv "${dir}/${1}${3}" "${dir}/${1}${3}.old"
+			fi
+			ln -sf "${1}-${ver}${3}" "${dir}/${1}${3}"
+		else # No links
+			# If they are hardlinked together, mv will fail.
+			rm -f "${dir}/${1}${3}.old"
+			mv "${dir}/${1}${3}" "${dir}/${1}${3}.old"
+			cat "${2}" >"${dir}/${1}${3}"
+		fi
+	fi
 }
 
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ "${dir}" = "/boot" ]; then
-  PATH="${PATH}:/usr/sbin:/sbin" \
-    run-parts --verbose --exit-on-error --arg="${ver}" --arg="${img}" \
-    /etc/kernel/preinst.d
+	PATH="${PATH}:/usr/sbin:/sbin" \
+		run-parts --verbose --exit-on-error --arg="${ver}" --arg="${img}" \
+		/etc/kernel/preinst.d
 fi
 
 # use the same input path as /usr/lib/kernel/install.d/50-dracut.install
@@ -84,39 +84,39 @@ base_dir=$(dirname "${img}")
 initrd=${base_dir}/initrd
 uki=${base_dir}/uki.efi
 
-if [ "$(basename "$img")" = "vmlinux" ] ; then
-  img_dest=vmlinux
+if [ "$(basename "${img}")" = "vmlinux" ]; then
+	img_dest=vmlinux
 else
-  img_dest=vmlinuz
+	img_dest=vmlinuz
 fi
 
 # If we found a uki.efi, install it instead of kernel+initrd
-if [ -f ${uki} ]; then
-  suffix=.efi
-  updatever ${img_dest} "${uki}" ${suffix}
+if [ -f "${uki}" ]; then
+	suffix=.efi
+	updatever ${img_dest} "${uki}" ${suffix}
 else
-  suffix=
-  updatever ${img_dest} "${img}"
-  if [ -f "${initrd}" ] ; then
-    updatever initramfs "${initrd}" .img
-  fi
+	suffix=
+	updatever ${img_dest} "${img}"
+	if [ -f "${initrd}" ]; then
+		updatever initramfs "${initrd}" .img
+	fi
 fi
 
 updatever System.map "${map}"
 
 config=$(dirname "${map}")
 config="${config}/.config"
-if [ -f "${config}" ] ; then
-  updatever config "${config}"
+if [ -f "${config}" ]; then
+	updatever config "${config}"
 fi
 
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ "${dir}" = "/boot" ]; then
-  PATH="${PATH}:/usr/sbin:/sbin" \
-    run-parts --verbose --exit-on-error --arg="${ver}" --arg="${dir}/${img_dest}-${ver}${suffix}" \
-    /etc/kernel/postinst.d
+	PATH="${PATH}:/usr/sbin:/sbin" \
+		run-parts --verbose --exit-on-error --arg="${ver}" --arg="${dir}/${img_dest}-${ver}${suffix}" \
+		/etc/kernel/postinst.d
 fi
 
 exit 0
