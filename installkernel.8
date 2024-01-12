@@ -11,6 +11,12 @@ tree.  It is called by the Linux kernel makefiles when
 .B make install
 is invoked there.
 .P
+If systemd's kernel-install is present on the system, it is used to
+install the kernel. The
+.B NO_SYSTEMD_KERNEL_INSTALL
+environment variable may be used to override this. See the
+kernel-install manual for more information on how to configure it.
+.P
 If the new kernel is an unified kernel image, it is installed into
 .IR {directory}/vmlinuz-{version}.efi .
 Otherwise, the new kernel is installed into
