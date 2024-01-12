@@ -13,7 +13,7 @@
 # from a generic kernel source tree, and the image will be installed to
 # the proper place for Debian GNU/Linux.
 
-if command -v kernel-install > /dev/null; then
+if [ -z ${NO_SYSTEMD_KERNEL_INSTALL} ] && command -v kernel-install > /dev/null; then
 	exec kernel-install add --verbose "${1}" "${2}"
 fi
 
