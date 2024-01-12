@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this file is installed by sys-kernel/installkernel-gentoo
+# this file is installed by sys-kernel/installkernel
 
 ver=${1}
 img=${2}
@@ -54,7 +54,7 @@ main() {
 	initrd="${basedir}/initrd"
 	[[ -f ${initrd} ]] && ukify_gen_args+=(--initrd="${initrd}")
 
-	# Use the same files as installkernel-systemd's 60-ukify.install
+	# Use the same files as systemd's 60-ukify.install
 	cmdline=$(find_config_file cmdline)
 	[[ "${cmdline}" ]] && ukify_gen_args+=(--cmdline=@"${cmdline}")
 

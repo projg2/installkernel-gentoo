@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# this file is installed by sys-kernel/installkernel-systemd
+# this file is installed by sys-kernel/installkernel
 
 COMMAND="${1}"
 KERNEL_IMAGE="${4}"

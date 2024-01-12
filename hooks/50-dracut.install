@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this file is installed by sys-kernel/installkernel-gentoo
+# this file is installed by sys-kernel/installkernel
 
 ver=${1}
 img=${2}
