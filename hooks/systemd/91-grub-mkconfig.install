@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# this file is installed by sys-kernel/installkernel
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+BOOT_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+: "${GRUB_CFG:=${KERNEL_INSTALL_BOOT_ROOT}/grub/grub.cfg}"
+
+# do nothing if somehow GRUB is not installed
+if ! command -v grub-mkconfig >/dev/null; then
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+		"grub-mkconfig command not available"
+	exit 0
+fi
+
+# The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
+# with BLS type 2 locations where we may install an UKI
+export GRUB_LINUX_KERNEL_GLOBS="
+	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-* ${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-* /vmlinuz-* /vmlinux-*
+	${KERNEL_INSTALL_BOOT_ROOT}/kernel-* ${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/gentoo-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/gentoo-*.efi ${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/gentoo-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
+"
+
+if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
+	if [[ -f ${GRUB_CFG} ]]; then
+		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+			"Backing up existing grub config as ${GRUB_CFG}~"
+		cp "${GRUB_CFG}"{,~} || { echo "Failed to save existing config" && exit 1; }
+	fi
+
+	if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" ]]; then
+		if [[ ${COMMAND} == add ]]; then
+			UKI="${KERNEL_INSTALL_STAGING_AREA}/uki.efi"
+			if [[ -f ${UKI} ]]; then
+				cp "${UKI}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" || exit 1
+			else
+				cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" || exit 1
+				INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
+				if [[ -f ${INITRD} ]]; then
+					cp "${INITRD}" "${KERNEL_INSTALL_BOOT_ROOT}/initrd-${KERNEL_VERSION}" || exit 1
+				fi
+			fi
+		elif [[ ${COMMAND} == remove ]]; then
+			rm -f \
+				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi"
+			"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}"
+			"${KERNEL_INSTALL_BOOT_ROOT}/initrd-${KERNEL_VERSION}" || exit 1
+		fi
+	fi
+
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+		"Generating new GRUB config as ${GRUB_CFG}"
+	dname="$(dirname "${GRUB_CFG}")"
+	mkdir -p "${dname}" || { echo "Failed to mkdir ${dname}" && exit 1; }
+	grub-mkconfig -o "${GRUB_CFG}" || { echo "grub-mkconfig failed" && exit 1; }
+fi
