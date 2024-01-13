@@ -36,15 +36,19 @@ main() {
 		cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
 	fi
 
+	# The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
+	# with BLS type 2 locations where we may install an UKI
+	: "${GRUB_LINUX_KERNEL_GLOBS:="
+		/boot/vmlinuz-* /boot/vmlinux-* /boot/kernel-* /vmlinuz-* /vmlinux-*
+		/boot/EFI/EFI/Linux/*.efi /boot/efi/EFI/Linux/*.efi
+		/boot/EFI/Linux/*.efi /efi/EFI/Linux/*.efi
+	"}"
+	export GRUB_LINUX_KERNEL_GLOBS
+
 	einfo "Generating new GRUB config as ${GRUB_CFG}"
 	local dname="${GRUB_CFG%/*}"
 	mkdir -vp "${dname}" || die "Failed to mkdir ${dname}"
-	# The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
-	# with BLS type 2 locations where we may install an UKI
-	GRUB_LINUX_KERNEL_GLOBS="/boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-*
-		/boot/kernel-* /boot/EFI/EFI/Linux/gentoo-*.efi /boot/efi/EFI/Linux/gentoo-*.efi
-		/boot/EFI/Linux/gentoo-*.efi /efi/EFI/Linux/gentoo-*.efi" \
-			grub-mkconfig -o "${GRUB_CFG}" || eerror "grub-mkconfig failed"
+	grub-mkconfig -o "${GRUB_CFG}" || eerror "grub-mkconfig failed"
 }
 
 main

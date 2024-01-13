@@ -18,14 +18,16 @@ fi
 
 # The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
 # with BLS type 2 locations where we may install an UKI
-export GRUB_LINUX_KERNEL_GLOBS="
-	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-* ${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-* /vmlinuz-* /vmlinux-*
-	${KERNEL_INSTALL_BOOT_ROOT}/kernel-* ${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/gentoo-*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/gentoo-*.efi ${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/gentoo-*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-*.efi
-"
+: "${GRUB_LINUX_KERNEL_GLOBS:="
+	/vmlinuz-* /vmlinux-*
+	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-*
+	${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-*
+	${KERNEL_INSTALL_BOOT_ROOT}/kernel-*
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/*.efi
+"}"
+export GRUB_LINUX_KERNEL_GLOBS
 
 if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
 	if [[ -f ${GRUB_CFG} ]]; then
