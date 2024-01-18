@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+ver=${1}
+img=${2}
+
+# Array of external kernel modules to rebuild.
+# Use @module-rebuild to rebuild all external kernel modules
+MODULES=(
+	@module-rebuild
+)
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+# From multiprocessing.eclass
+get_nproc() {
+	local nproc
+
+	# GNU
+	if type -P nproc &>/dev/null; then
+		nproc=$(nproc)
+	fi
+
+	# BSD
+	if [[ -z ${nproc} ]] && type -P sysctl &>/dev/null; then
+		nproc=$(sysctl -n hw.ncpu 2>/dev/null)
+	fi
+
+	# fallback to python2.6+
+	# note: this may fail (raise NotImplementedError)
+	if [[ -z ${nproc} ]] && type -P python &>/dev/null; then
+		nproc=$(python -c 'import multiprocessing; print(multiprocessing.cpu_count());' 2>/dev/null)
+	fi
+
+	if [[ -n ${nproc} ]]; then
+		echo "${nproc}"
+	else
+		echo "${1:-1}"
+	fi
+}
+
+_get_all_makeopts() {
+	echo "${MAKEOPTS} ${GNUMAKEFLAGS} ${MAKEFLAGS}"
+}
+
+get_makeopts_jobs() {
+	makeopts_jobs "$(_get_all_makeopts)" "${1:-1}"
+}
+
+makeopts_jobs() {
+	[[ $# -eq 0 ]] && set -- "$(_get_all_makeopts)"
+	# This assumes the first .* will be more greedy than the second .*
+	# since POSIX doesn't specify a non-greedy match (i.e. ".*?").
+	local jobs=$(echo " $* " | sed -r -n \
+		-e 's:.*[[:space:]](-[a-z]*j|--jobs[=[:space:]])[[:space:]]*([0-9]+).*:\2:p' \
+		-e "s:.*[[:space:]](-[a-z]*j|--jobs)[[:space:]].*:${2:-$(( $(get_nproc) + 1 ))}:p")
+	echo ${jobs:-1}
+}
+
+get_makeopts_loadavg() {
+	makeopts_loadavg "$(_get_all_makeopts)" "${1:-999}"
+}
+
+makeopts_loadavg() {
+	[[ $# -eq 0 ]] && set -- "$(_get_all_makeopts)"
+	# This assumes the first .* will be more greedy than the second .*
+	# since POSIX doesn't specify a non-greedy match (i.e. ".*?").
+	local lavg=$(echo " $* " | sed -r -n \
+		-e 's:.*[[:space:]](-[a-z]*l|--(load-average|max-load)[=[:space:]])[[:space:]]*([0-9]+(\.[0-9]+)?)[[:space:]].*:\3:p' \
+		-e "s:.*[[:space:]](-[a-z]*l|--(load-average|max-load))[[:space:]].*:${2:-999}:p")
+	# Default to ${inf} since the default is to not use a load limit.
+	echo ${lavg:-${2:-999}}
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	local emerge_opts=(
+		--oneshot
+		--jobs="$(get_makeopts_jobs)"
+		--load-average="$(get_makeopts_loadavg)"
+		--ignore-default-opts
+	)
+
+	# Since we are sort of running emerge from emerge/make we start with
+	# a dirty environment which creates a mess. Start clean instead and
+	# disable ebuild-locks.
+	# Binpkgs don't make sense here, they don't contain information on which
+	# kernel version they were built for.
+	# USE=dist-kernel doesn't make sense here, we would end up rebuilding twice.
+	# Instruct linux-mod(-r1).eclass (via linux-info.eclass) to use the just
+	# installed kernel instead of the eselected one.
+	env -i \
+		PATH="${PATH}" \
+		FEATURES="-getbinpkg -buildpkg -ebuild-locks" \
+		USE="-dist-kernel" \
+		KERNEL_DIR="${ROOT%/}/usr/src/linux-${ver}" \
+		emerge ${emerge_opts[*]} ${MODULES[*]} || die
+}
+
+main
