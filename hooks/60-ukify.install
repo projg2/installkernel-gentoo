@@ -33,6 +33,12 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
+	if [[ -n ${INSTALLKERNEL_UKI_GENERATOR} &&
+		${INSTALLKERNEL_UKI_GENERATOR} != ukify ]]; then
+			# We are not selected as the uki generator
+			exit 0
+	fi
+
 	# do nothing if somehow ukify is not installed
 	if [[ -x /usr/lib/systemd/ukify ]]; then
 		ukify=/usr/lib/systemd/ukify

@@ -25,6 +25,12 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
+	if [[ -n ${INSTALLKERNEL_INITRD_GENERATOR} &&
+		${INSTALLKERNEL_INITRD_GENERATOR} != dracut ]]; then
+			# We are not selected as the initrd generator
+			exit 0
+	fi
+
 	# do nothing if somehow dracut is not installed
 	[[ -x $(command -v dracut) ]] || { ewarn "dracut is not installed, not generating an initramfs" && exit 0; }
 
@@ -35,7 +41,15 @@ main() {
 		--verbose
 		# if uefi=yes is used, dracut needs to locate the kernel image
 		--kernel-image "${img}"
+	)
 
+	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
+		initramfs_gen_args+=( --uefi )
+	elif [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
+		initramfs_gen_args+=( --no-uefi )
+	fi
+
+	initramfs_gen_args+=(
 		# positional arguments
 		"${initrd}" "${ver}"
 	)
