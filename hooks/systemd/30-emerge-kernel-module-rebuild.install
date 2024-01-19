@@ -15,6 +15,43 @@ MODULES=(
 	@module-rebuild
 )
 
+candidates=(
+	"${ROOT%/}/lib/modules/${KERNEL_VERSION}/build"
+	"${ROOT%/}/lib/modules/${KERNEL_VERSION}/source"
+	"${ROOT%/}/usr/src/linux-${KERNEL_VERSION}"
+)
+
+if [[ "${KERNEL_IMAGE:0:1}" == "/" ]]; then
+	# If the kernel image is an absolute path, try to extract
+	# the source root from this path
+	rel_from_src=${KERNEL_IMAGE#*/usr/src/}
+	candidates+=(
+		"${ROOT%/}/usr/src/${rel_from_src%%/*}"
+	)
+else
+	# If the kernel image is a relative path try the pwd as well
+	candidates+=(
+		"$(pwd)"
+	)
+fi
+
+for dir in ${candidates[@]}; do
+	if [[ -d ${dir} ]]; then
+		KERNEL_DIR="${dir}"
+		break
+	fi
+done
+
+if [[ -d ${KERNEL_DIR} ]]; then
+	if [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]]; then
+		echo "Using kernel sources directory: ${KERNEL_DIR}"
+	fi
+else
+	echo "Kernel sources directory not found"
+	exit 1
+fi
+
+
 # From multiprocessing.eclass
 get_nproc() {
 	local nproc
@@ -82,7 +119,11 @@ emerge_opts=(
 	--ignore-default-opts
 )
 
-if [[ ${KERNEL_INSTALL_VERBOSE} != 1 ]]; then
+if [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]]; then
+	emerge_opts+=(
+		--verbose
+	)
+else
 	emerge_opts+=(
 		--quiet=y
 		--quiet-fail=y
@@ -102,5 +143,5 @@ env -i \
 	PATH="${PATH}" \
 	FEATURES="-getbinpkg -buildpkg -ebuild-locks" \
 	USE="-dist-kernel" \
-	KERNEL_DIR="${ROOT%/}/usr/src/linux-${KERNEL_VERSION}" \
+	KERNEL_DIR="${KERNEL_DIR}" \
 	emerge ${emerge_opts[*]} ${MODULES[*]} || exit 1

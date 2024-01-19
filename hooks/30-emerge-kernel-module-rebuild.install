@@ -15,6 +15,10 @@ die() {
 	exit 1
 }
 
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
 # From multiprocessing.eclass
 get_nproc() {
 	local nproc
@@ -81,6 +85,39 @@ main() {
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
+	local candidates=(
+		"${ROOT%/}/lib/modules/${ver}/build"
+		"${ROOT%/}/lib/modules/${ver}/source"
+		"${ROOT%/}/usr/src/linux-${ver}"
+	)
+
+	if [[ "${img:0:1}" == "/" ]]; then
+		# If the kernel image is an absolute path, try to extract
+		# the source root from this path
+		local rel_from_src=${img#*/usr/src/}
+		candidates+=(
+			"${ROOT%/}/usr/src/${rel_from_src%%/*}"
+		)
+	else
+		# If the kernel image is a relative path try the pwd as well
+		candidates+=(
+			"$(pwd)"
+		)
+	fi
+
+	for dir in ${candidates[@]}; do
+		if [[ -d ${dir} ]]; then
+			KERNEL_DIR="${dir}"
+			break
+		fi
+	done
+
+	if [[ -d ${KERNEL_DIR} ]]; then
+		einfo "Using kernel sources directory: ${KERNEL_DIR}"
+	else
+		die "Kernel sources directory not found"
+	fi
+
 	local emerge_opts=(
 		--oneshot
 		--jobs="$(get_makeopts_jobs)"
@@ -100,7 +137,7 @@ main() {
 		PATH="${PATH}" \
 		FEATURES="-getbinpkg -buildpkg -ebuild-locks" \
 		USE="-dist-kernel" \
-		KERNEL_DIR="${ROOT%/}/usr/src/linux-${ver}" \
+		KERNEL_DIR="${KERNEL_DIR}" \
 		emerge ${emerge_opts[*]} ${MODULES[*]} || die
 }
 
