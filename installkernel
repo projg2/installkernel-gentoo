@@ -7,12 +7,10 @@
 # Copyright (C) 2009  Manoj Srivasta
 # Copyright 2020-2024 Gentoo Authors
 #
-# Install the kernel on a Debian Linux system.
+# Install the kernel on a Gentoo Linux system.
 #
-# This script is called from /usr/src/linux/arch/i386/boot/install.sh.
-# If you install it as /sbin/installkernel, you can do a "make install"
-# from a generic kernel source tree, and the image will be installed to
-# the proper place for Debian GNU/Linux.
+# This script is called by the kernel's "make install" if it is installed as
+# /sbin/installkernel. It is also called by kernel-install.eclass.
 
 SYSTEMD_KERNEL_INSTALL="${SYSTEMD_KERNEL_INSTALL:=0}"
 
