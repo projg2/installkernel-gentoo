@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Copyright 2023-2024 Gentoo Authors
 # this file is installed by sys-kernel/installkernel
 
 ver=${1}
