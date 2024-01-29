@@ -61,5 +61,6 @@ if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
 		"Generating new GRUB config as ${GRUB_CFG}"
 	dname="$(dirname "${GRUB_CFG}")"
 	mkdir -p "${dname}" || { echo "Failed to mkdir ${dname}" && exit 1; }
-	grub-mkconfig -o "${GRUB_CFG}" || { echo "grub-mkconfig failed" && exit 1; }
+	# Exit non-fatally to ensure emerge does not fail completely in containers
+	grub-mkconfig -o "${GRUB_CFG}" || { echo "grub-mkconfig failed" && exit 0; }
 fi

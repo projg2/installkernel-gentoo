@@ -49,6 +49,7 @@ main() {
 	einfo "Generating new GRUB config as ${GRUB_CFG}"
 	local dname="${GRUB_CFG%/*}"
 	mkdir -vp "${dname}" || die "Failed to mkdir ${dname}"
+	# Exit non-fatally to ensure emerge does not fail completely in containers
 	grub-mkconfig -o "${GRUB_CFG}" || eerror "grub-mkconfig failed"
 }
 
