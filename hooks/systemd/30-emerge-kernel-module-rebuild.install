@@ -144,7 +144,7 @@ fi
 # installed kernel instead of the eselected one.
 env -i \
 	PATH="${PATH}" \
-	FEATURES="-getbinpkg -buildpkg -ebuild-locks" \
+	FEATURES="-getbinpkg -buildpkg -ebuild-locks parallel-install" \
 	USE="-dist-kernel" \
 	KERNEL_DIR="${KERNEL_DIR}" \
 	emerge ${emerge_opts[*]} ${MODULES[*]} || exit 1
