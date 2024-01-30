@@ -130,8 +130,8 @@ if [ "${dir}" = "/boot" ]; then
 
 		for x in /etc/kernel/postinst.d/*; do
 			[ -x "${x}" ] || continue
-			echo "running ${x} ${ver} ${img}"
-			"${x}" ${ver} "${img}"
+			echo "running ${x} ${ver} ${dir}/${img_dest}-${ver}${suffix}"
+			"${x}" ${ver} "${dir}/${img_dest}-${ver}${suffix}"
 		done
 	)
 fi
