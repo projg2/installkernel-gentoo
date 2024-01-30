@@ -81,7 +81,6 @@ if [ "${dir}" = "/boot" ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
-
 		for x in /etc/kernel/preinst.d/*; do
 			[ -x "${x}" ] || continue
 			echo "running ${x} ${ver} ${img}"
@@ -126,9 +125,15 @@ fi
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ "${dir}" = "/boot" ]; then
-	PATH="${PATH}:/usr/sbin:/sbin" \
-		run-parts --verbose --exit-on-error --arg="${ver}" --arg="${dir}/${img_dest}-${ver}${suffix}" \
-		/etc/kernel/postinst.d
+	(
+		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
+
+		for x in /etc/kernel/postinst.d/*; do
+			[ -x "${x}" ] || continue
+			echo "running ${x} ${ver} ${img}"
+			"${x}" ${ver} "${img}"
+		done
+	)
 fi
 
 exit 0
