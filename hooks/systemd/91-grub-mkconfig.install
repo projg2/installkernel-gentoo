@@ -8,14 +8,18 @@ KERNEL_VERSION="${2}"
 BOOT_DIR_ABS="${3}"
 KERNEL_IMAGE="${4}"
 
-: "${GRUB_CFG:=${KERNEL_INSTALL_BOOT_ROOT}/grub/grub.cfg}"
+# kernel-install insists on using the EFI partition as BOOT_ROOT. And ignores
+# the variable if it does not point to the root of a FAT partition.
+# This is what we want for systemd-boot, but it is definitely not what we want
+# for GRUB. grub-install (by default) installs a grub efi executable that
+# always loads /boot/grub/grub.cfg, this will break if the BOOT_ROOT is not
+# /boot which may be the case if the ESP is not mounted there.
+#
+# Instead ignore what kernel-install tells us, and mirror what the -systemd
+# variant of this plugin does and always install to /boot
+KERNEL_INSTALL_BOOT_ROOT="/boot"
 
-# do nothing if somehow GRUB is not installed
-if ! command -v grub-mkconfig >/dev/null; then
-	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
-		"grub-mkconfig command not available"
-	exit 0
-fi
+: "${GRUB_CFG:=${KERNEL_INSTALL_BOOT_ROOT}/grub/grub.cfg}"
 
 # The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
 # with BLS type 2 locations where we may install an UKI
@@ -31,12 +35,6 @@ fi
 export GRUB_LINUX_KERNEL_GLOBS
 
 if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
-	if [[ -f ${GRUB_CFG} ]]; then
-		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
-			"Backing up existing grub config as ${GRUB_CFG}~"
-		cp "${GRUB_CFG}"{,~} || { echo "Failed to save existing config" && exit 1; }
-	fi
-
 	if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" ]]; then
 		if [[ ${COMMAND} == add ]]; then
 			UKI="${KERNEL_INSTALL_STAGING_AREA}/uki.efi"
@@ -55,6 +53,19 @@ if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
 				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" \
 				"${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 		fi
+	fi
+
+	# do nothing if somehow GRUB is not installed
+	if ! command -v grub-mkconfig >/dev/null; then
+		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+			"grub-mkconfig command not available"
+		exit 0
+	fi
+
+	if [[ -f ${GRUB_CFG} ]]; then
+		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+			"Backing up existing grub config as ${GRUB_CFG}~"
+		cp "${GRUB_CFG}"{,~} || { echo "Failed to save existing config" && exit 1; }
 	fi
 
 	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
