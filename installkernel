@@ -78,9 +78,16 @@ updatever() {
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ "${dir}" = "/boot" ]; then
-	PATH="${PATH}:/usr/sbin:/sbin" \
-		run-parts --verbose --exit-on-error --arg="${ver}" --arg="${img}" \
-		/etc/kernel/preinst.d
+	(
+		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
+
+
+		for x in /etc/kernel/preinst.d/*; do
+			[ -x "${x}" ] || continue
+			echo "running ${x} ${ver} ${img}"
+			"${x}" ${ver} "${img}"
+		done
+	)
 fi
 
 # use the same input path as /usr/lib/kernel/install.d/50-dracut.install
