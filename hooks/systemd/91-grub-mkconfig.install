@@ -25,6 +25,7 @@ KERNEL_INSTALL_BOOT_ROOT="/boot"
 # with BLS type 2 locations where we may install an UKI
 : "${GRUB_LINUX_KERNEL_GLOBS:="
 	/vmlinuz-* /vmlinux-*
+	/efi/EFI/Linux/*.efi
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-*
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-*
 	${KERNEL_INSTALL_BOOT_ROOT}/kernel-*
@@ -35,26 +36,6 @@ KERNEL_INSTALL_BOOT_ROOT="/boot"
 export GRUB_LINUX_KERNEL_GLOBS
 
 if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
-	if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" ]]; then
-		if [[ ${COMMAND} == add ]]; then
-			UKI="${KERNEL_INSTALL_STAGING_AREA}/uki.efi"
-			if [[ -f ${UKI} ]]; then
-				cp "${UKI}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" || exit 1
-			else
-				cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" || exit 1
-				INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
-				if [[ -f ${INITRD} ]]; then
-					cp "${INITRD}" "${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
-				fi
-			fi
-		elif [[ ${COMMAND} == remove ]]; then
-			rm -f \
-				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" \
-				"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" \
-				"${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
-		fi
-	fi
-
 	# do nothing if somehow GRUB is not installed
 	if ! command -v grub-mkconfig >/dev/null; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
