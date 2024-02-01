@@ -8,6 +8,10 @@ KERNEL_VERSION="${2}"
 BOOT_DIR_ABS="${3}"
 KERNEL_IMAGE="${4}"
 
+if [[ ${KERNEL_INSTALL_LAYOUT} != "grub" ]]; then
+	exit 0
+fi
+
 # kernel-install insists on using the EFI partition as BOOT_ROOT. And ignores
 # the variable if it does not point to the root of a FAT partition.
 # This is what we want for systemd-boot, but it is definitely not what we want
