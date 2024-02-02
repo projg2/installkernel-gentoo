@@ -1,5 +1,4 @@
 name: Test installkernel
-description: Check if installkernel produces the expected output in all USE configurations
 on: [push, pull_request]
 
 jobs:
