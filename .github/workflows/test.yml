@@ -1,0 +1,13 @@
+name: Test installkernel
+description: Check if installkernel produces the expected output in all USE configurations
+on: [push, pull_request]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+        - name: Run tests
+            run: ./run_tests_in_docker.sh
+
+
