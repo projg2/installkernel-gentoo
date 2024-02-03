@@ -445,7 +445,6 @@ TEST_CASES["-generic-uki dracut systemd systemd-boot uki -ukify grub"]=\
 /efi/EFI
 /efi/EFI/Linux
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
-/boot/grub
 
 5 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki ukify -grub"]=\
@@ -539,7 +538,6 @@ TEST_CASES["generic-uki -dracut systemd -systemd-boot uki -ukify grub"]=\
 /efi/EFI
 /efi/EFI/Linux
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
-/boot/grub
 
 5 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd systemd-boot -uki -ukify -grub"]=\
