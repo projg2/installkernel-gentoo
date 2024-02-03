@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 cd /tmp || exit 1
-mkdir -p /efi || exit 1
 
 cp /tmp/installkernel-gentoo-9999/installkernel-9999.ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild || exit 1
 tar -czf /var/cache/distfiles/installkernel-9999.tar.gz installkernel-gentoo-9999/. || exit 1
@@ -10,6 +9,14 @@ ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild m
 INST_KERN="$(ls /boot/kernel*-gentoo-dist* || exit 1)"
 INST_KV_FULL="${INST_KERN#/boot/kernel-}"
 INST_KV="${INST_KV_FULL%-gentoo-dist}"
+
+# Create a fake ESP
+dd if=/dev/zero of=/fake-efi bs=1024 count=102400
+FAKE_EFI="$(losetup -f)"
+losetup "${FAKE_EFI}" /fake-efi || exit 1
+mkfs.vfat -F 32 "${FAKE_EFI}" || exit 1
+mkdir -p /efi || exit 1
+mount -t vfat "${FAKE_EFI}" /efi || exit 1
 
 # Generate with:
 #
@@ -93,17 +100,17 @@ TEST_CASES["-generic-uki -dracut systemd -systemd-boot -uki ukify grub"]=\
 
 2 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd -systemd-boot uki ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd -systemd-boot uki ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -148,17 +155,17 @@ TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki ukify grub"]=\
 
 5 directories, 2 files"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot uki ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot uki ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -253,32 +260,32 @@ TEST_CASES["-generic-uki dracut systemd -systemd-boot -uki ukify grub"]=\
 
 2 directories, 2 files"
 TEST_CASES["-generic-uki dracut systemd -systemd-boot uki -ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd -systemd-boot uki -ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd -systemd-boot uki ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd -systemd-boot uki ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -327,32 +334,32 @@ TEST_CASES["-generic-uki dracut systemd systemd-boot -uki ukify grub"]=\
 
 5 directories, 3 files"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki -ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki -ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -399,17 +406,17 @@ TEST_CASES["generic-uki -dracut systemd -systemd-boot -uki -ukify grub"]=\
 
 2 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd -systemd-boot uki -ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd -systemd-boot uki -ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -436,17 +443,17 @@ TEST_CASES["generic-uki -dracut systemd systemd-boot -uki -ukify grub"]=\
 
 5 directories, 3 files"
 TEST_CASES["generic-uki -dracut systemd systemd-boot uki -ukify -grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
 3 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd systemd-boot uki -ukify grub"]=\
-"/boot
-/boot/EFI
-/boot/EFI/Linux
-/boot/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
+"/efi
+/efi/EFI
+/efi/EFI/Linux
+/efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /boot/grub
 
 4 directories, 1 file"
@@ -462,7 +469,7 @@ for case in "${!TEST_CASES[@]}"; do
 	emerge --rage-clean --quiet --quiet-unmerge-warn sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	USE="${case}" emerge --quiet '=sys-kernel/installkernel-9999' || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	USE="${case}" emerge --quiet sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
-	tree="$(tree -ifnav /boot)"
+	tree="$(tree -ifnav /boot /efi)"
 	if [[ "${TEST_CASES[${case}]}" == "${tree}" ]]; then
 		echo "Case USE=\"${case}\" matches"
 	else
@@ -480,6 +487,11 @@ ${tree}
 done
 
 echo ""
+
+# Cleanup fake ESP
+rm -rf /boot/* /efi/* || exit 1
+umount /efi || exit 1
+losetup -d "${FAKE_EFI}" || exit 1
 
 if [[ ${#FAILURES[@]} -eq 0 ]]; then
 	echo "All tests succeeded"
