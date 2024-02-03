@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 cd /tmp || exit 1
+mkdir -p /efi || exit 1
 
 cp /tmp/installkernel-gentoo-9999/installkernel-9999.ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild || exit 1
 tar -czf /var/cache/distfiles/installkernel-9999.tar.gz installkernel-gentoo-9999/. || exit 1
@@ -454,8 +455,8 @@ TEST_CASES["generic-uki -dracut systemd systemd-boot uki -ukify grub"]=\
 FAILURES=()
 
 for case in "${!TEST_CASES[@]}"; do
-	rm -rf /boot/* || { echo "Error at case USE=\"${case}\"" && exit 1; }
-	mkdir -p /boot/EFI/Linux || { echo "Error at case USE=\"${case}\"" && exit 1; }
+	rm -rf /boot/* /efi/* || { echo "Error at case USE=\"${case}\"" && exit 1; }
+	mkdir -p /efi/EFI/Linux || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	echo "Testing case USE=\"${case}\" ..."
 
 	emerge --rage-clean --quiet --quiet-unmerge-warn sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
