@@ -15,13 +15,14 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="dracut grub systemd systemd-boot uki ukify"
+IUSE="dracut grub refind systemd systemd-boot uki ukify"
 REQUIRED_USE="systemd-boot? ( systemd )"
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	dracut? ( >=sys-kernel/dracut-060_pre20240104-r1 )
 	grub? ( sys-boot/grub )
+	refind? ( sys-boot/refind )
 	systemd? (
 		|| (
 			sys-apps/systemd[kernel-install(-)]
@@ -61,12 +62,14 @@ src_install() {
 	exeinto /etc/kernel/postinst.d
 	use uki && doexe hooks/90-uki-copy.install
 	use grub && doexe hooks/91-grub-mkconfig.install
+	use refind && doexe hooks/95-refind-copy-icon.install
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
+	use refind && doexe hooks/systemd/95-refind-copy-icon.install
 
 	if use systemd; then
 		sed -e 's/${SYSTEMD_KERNEL_INSTALL:=0}/${SYSTEMD_KERNEL_INSTALL:=1}/g' -i installkernel ||
