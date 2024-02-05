@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Copyright 2024 Gentoo Authors
+# this file is installed by sys-kernel/installkernel
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+BOOT_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_gentoo.png}"
+
+# Refind does not discover kernels in the bls layout
+if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+	KERNEL_INSTALL_BOOT_ROOT="/boot"
+	if [[ ${COMMAND} == add ]]; then
+		cp "${REFIND_ICON}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.png" || exit 1
+	elif [[ ${COMMAND} == remove ]]; then
+		rm -f "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.png" || exit 1
+	fi
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+	UKI_DIR="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux"
+	if [[ ${COMMAND} == add ]]; then
+		cp "${REFIND_ICON}" "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
+	elif [[ ${COMMAND} == remove ]]; then
+		rm -f "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
+	fi
+fi
