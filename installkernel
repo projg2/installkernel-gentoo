@@ -95,7 +95,7 @@ base_dir=$(dirname "${img}")
 initrd=${base_dir}/initrd
 uki=${base_dir}/uki.efi
 
-if [ "$(basename "${img}")" = "vmlinux" ]; then
+if [ "${img%vmlinux*}" != "${img}" ]; then
 	img_dest=vmlinux
 else
 	img_dest=vmlinuz
