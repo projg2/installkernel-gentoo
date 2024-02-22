@@ -38,6 +38,21 @@ else
 	exit 1
 fi
 
+dropindirs_sort() {
+    for d; do
+        for i in "${d}/"*; do
+            [ -e "${i}" ] && echo "${i##*/}"
+        done
+    done | sort -Vu | while read -r f; do
+        for d; do
+            if [ -e "${d}/${f}" ]; then
+                [ -x "${d}/${f}" ] && echo "${d}/${f}"
+                continue 2
+            fi
+        done
+    done
+}
+
 # Create backups of older versions before installing
 updatever() {
 	if [ -f "${dir}/${1}-${ver}${3}" ]; then
@@ -81,10 +96,19 @@ if [ "${dir}" = "/boot" ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
-		for x in /etc/kernel/preinst.d/*; do
-			[ -x "${x}" ] || continue
-			echo "running ${x} ${ver} ${img}"
-			"${x}" ${ver} "${img}"
+		if [ -z "${INSTALLKERNEL_PREINST_PLUGINS}" ]; then
+			INSTALLKERNEL_PREINST_PLUGINS="$(
+				dropindirs_sort \
+				"/etc/kernel/preinst.d" \
+				"/usr/lib/kernel/preinst.d"
+			)"
+		fi
+
+		for plugin in ${INSTALLKERNEL_PREINST_PLUGINS}; do
+			echo ""
+			echo "Running ${plugin} ${ver} ${img}"
+			echo ""
+			"${plugin}" ${ver} "${img}"
 		done
 	)
 fi
@@ -128,10 +152,19 @@ if [ "${dir}" = "/boot" ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
-		for x in /etc/kernel/postinst.d/*; do
-			[ -x "${x}" ] || continue
-			echo "running ${x} ${ver} ${dir}/${img_dest}-${ver}${suffix}"
-			"${x}" ${ver} "${dir}/${img_dest}-${ver}${suffix}"
+		if [ -z "${INSTALLKERNEL_POSTINST_PLUGINS}" ]; then
+			INSTALLKERNEL_POSTINST_PLUGINS="$(
+				dropindirs_sort \
+				"/etc/kernel/postinst.d" \
+				"/usr/lib/kernel/postinst.d"
+			)"
+		fi
+
+		for plugin in ${INSTALLKERNEL_POSTINST_PLUGINS}; do
+			echo ""
+			echo "Running ${plugin} ${ver} ${dir}/${img_dest}-${ver}${suffix}"
+			echo ""
+			"${plugin}" ${ver} "${dir}/${img_dest}-${ver}${suffix}"
 		done
 	)
 fi
