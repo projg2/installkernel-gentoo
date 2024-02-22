@@ -15,7 +15,7 @@
 SYSTEMD_KERNEL_INSTALL="${SYSTEMD_KERNEL_INSTALL:=0}"
 
 if [ "${SYSTEMD_KERNEL_INSTALL}" = "1" ] && command -v kernel-install >/dev/null; then
-	exec kernel-install add --verbose "${1}" "${2}"
+	exec -a "${0}" kernel-install --verbose ${@}
 fi
 
 set -e
