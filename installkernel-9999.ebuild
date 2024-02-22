@@ -20,7 +20,15 @@ REQUIRED_USE="systemd-boot? ( systemd )"
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
-	dracut? ( >=sys-kernel/dracut-060_pre20240104-r1 )
+	dracut? (
+		>=sys-kernel/dracut-060_pre20240104-r1
+		uki? (
+			|| (
+				sys-apps/systemd[boot(-)]
+				sys-apps/systemd-utils[boot(-)]
+			)
+		)
+	)
 	grub? ( sys-boot/grub )
 	refind? ( sys-boot/refind )
 	systemd? (
@@ -37,8 +45,8 @@ RDEPEND="
 	)
 	ukify? (
 		|| (
-			sys-apps/systemd[ukify(-)]
-			sys-apps/systemd-utils[ukify(-)]
+			sys-apps/systemd[boot(-),ukify(-)]
+			sys-apps/systemd-utils[boot(-),ukify(-)]
 		)
 	)
 	!=sys-apps/systemd-255.2-r1
