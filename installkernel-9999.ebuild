@@ -55,11 +55,11 @@ src_install() {
 	keepdir /etc/kernel/postinst.d
 	keepdir /etc/kernel/preinst.d
 
-	exeinto /etc/kernel/preinst.d
+	exeinto /usr/lib/kernel/preinst.d
 	use dracut && doexe hooks/50-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
-	exeinto /etc/kernel/postinst.d
+	exeinto /usr/lib/kernel/postinst.d
 	use uki && doexe hooks/90-uki-copy.install
 	use grub && doexe hooks/91-grub-mkconfig.install
 	use refind && doexe hooks/95-refind-copy-icon.install
