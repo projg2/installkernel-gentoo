@@ -19,6 +19,7 @@ IUSE="dracut grub refind systemd systemd-boot uki ukify"
 REQUIRED_USE="
 	systemd-boot? ( systemd )
 	ukify? ( uki )
+	?? ( grub refind systemd-boot )
 "
 
 RDEPEND="
