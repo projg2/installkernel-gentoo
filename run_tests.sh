@@ -160,17 +160,13 @@ TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki -ukify -grub"]=\
 7 directories, 2 files"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki -ukify grub"]=\
 "/boot
+/boot/grub
+/boot/kernel-${INST_KV}-gentoo-dist
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/gentoo
-/efi/gentoo/${INST_KV}-gentoo-dist
-/efi/gentoo/${INST_KV}-gentoo-dist/linux
-/efi/loader
-/efi/loader/entries
-/efi/loader/entries/gentoo-${INST_KV}-gentoo-dist.conf
 
-7 directories, 2 files"
+5 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki ukify -grub"]=\
 "/boot
 /efi
@@ -186,17 +182,13 @@ TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki ukify -grub"]=\
 7 directories, 2 files"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot -uki ukify grub"]=\
 "/boot
+/boot/grub
+/boot/kernel-${INST_KV}-gentoo-dist
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/gentoo
-/efi/gentoo/${INST_KV}-gentoo-dist
-/efi/gentoo/${INST_KV}-gentoo-dist/linux
-/efi/loader
-/efi/loader/entries
-/efi/loader/entries/gentoo-${INST_KV}-gentoo-dist.conf
 
-7 directories, 2 files"
+5 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd systemd-boot uki ukify -grub"]=\
 "/boot
 /efi
@@ -390,18 +382,14 @@ TEST_CASES["-generic-uki dracut systemd systemd-boot -uki -ukify -grub"]=\
 7 directories, 3 files"
 TEST_CASES["-generic-uki dracut systemd systemd-boot -uki -ukify grub"]=\
 "/boot
+/boot/grub
+/boot/initramfs-${INST_KV}-gentoo-dist.img
+/boot/kernel-${INST_KV}-gentoo-dist
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/gentoo
-/efi/gentoo/${INST_KV}-gentoo-dist
-/efi/gentoo/${INST_KV}-gentoo-dist/initrd
-/efi/gentoo/${INST_KV}-gentoo-dist/linux
-/efi/loader
-/efi/loader/entries
-/efi/loader/entries/gentoo-${INST_KV}-gentoo-dist.conf
 
-7 directories, 3 files"
+5 directories, 2 files"
 TEST_CASES["-generic-uki dracut systemd systemd-boot -uki ukify -grub"]=\
 "/boot
 /efi
@@ -418,18 +406,14 @@ TEST_CASES["-generic-uki dracut systemd systemd-boot -uki ukify -grub"]=\
 7 directories, 3 files"
 TEST_CASES["-generic-uki dracut systemd systemd-boot -uki ukify grub"]=\
 "/boot
+/boot/grub
+/boot/initramfs-6.7.5-gentoo-dist.img
+/boot/kernel-6.7.5-gentoo-dist
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/gentoo
-/efi/gentoo/${INST_KV}-gentoo-dist
-/efi/gentoo/${INST_KV}-gentoo-dist/initrd
-/efi/gentoo/${INST_KV}-gentoo-dist/linux
-/efi/loader
-/efi/loader/entries
-/efi/loader/entries/gentoo-${INST_KV}-gentoo-dist.conf
 
-7 directories, 3 files"
+5 directories, 2 files"
 TEST_CASES["-generic-uki dracut systemd systemd-boot uki -ukify -grub"]=\
 "/boot
 /efi
@@ -556,18 +540,13 @@ TEST_CASES["generic-uki -dracut systemd systemd-boot -uki -ukify -grub"]=\
 7 directories, 3 files"
 TEST_CASES["generic-uki -dracut systemd systemd-boot -uki -ukify grub"]=\
 "/boot
+/boot/grub
+/boot/kernel-${INST_KV}-gentoo-dist.efi
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/gentoo
-/efi/gentoo/${INST_KV}-gentoo-dist
-/efi/gentoo/${INST_KV}-gentoo-dist/initrd
-/efi/gentoo/${INST_KV}-gentoo-dist/linux
-/efi/loader
-/efi/loader/entries
-/efi/loader/entries/gentoo-${INST_KV}-gentoo-dist.conf
 
-7 directories, 3 files"
+5 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd systemd-boot uki -ukify -grub"]=\
 "/boot
 /efi
