@@ -7,6 +7,8 @@ ver=${1}
 img=${2}
 basedir=$(dirname "${img}")
 initrd="${basedir}/initrd"
+uki="${basedir}/uki.efi"
+tmp="${basedir}/dracut-tmp"
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -46,26 +48,33 @@ main() {
 
 	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
 		initramfs_gen_args+=( --uefi )
+		out="${uki}"
 	elif [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
 		initramfs_gen_args+=( --no-uefi )
+		out="${initrd}"
+	else
+		out="${tmp}"
 	fi
 
 	initramfs_gen_args+=(
 		# positional arguments
-		"${initrd}" "${ver}"
+		"${out}" "${ver}"
 	)
 
 	dracut "${initramfs_gen_args[@]}" || die "Failed to generate initramfs"
 
 	# if dracut is used in uefi=yes mode, initrd will actually
-	# be a combined kernel+initramfs UEFI executable.  we can easily
+	# be a combined kernel+initramfs UEFI executable. We can easily
 	# recognize it by PE magic (vs cpio for a regular initramfs)
-	[[ -s ${initrd} ]] && read -n 2 magic <"${initrd}"
-	if [[ ${magic} == MZ ]]; then
-		einfo "Combined UEFI kernel+initramfs executable found"
-		# install the combined executable in place of kernel
-		uki="${basedir}/uki.efi"
-		mv "${initrd}" "${uki}" || die "Failed to rename initramfs"
+	if [[ -s ${tmp} ]]; then
+		read -n 2 magic <"${tmp}"
+		if [[ ${magic} == MZ ]]; then
+			einfo "Combined UEFI kernel+initramfs executable found"
+			mv "${tmp}" "${uki}" || die "Failed to rename initramfs"
+		else
+			einfo "Plain initramfs image found"
+			mv "${tmp}" "${initrd}" || die "Failed to rename initramfs"
+		fi
 	fi
 }
 
