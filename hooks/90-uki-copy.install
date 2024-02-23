@@ -20,6 +20,10 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
+	if [[ -n ${INSTALLKERNEL_LAYOUT} && ${INSTALLKERNEL_LAYOUT} != uki ]]; then
+		exit 0
+	fi
+
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
 	# Do nothing if the image we installed is not an EFI executable
