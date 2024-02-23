@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 # Copyright 2020-2024 Gentoo Authors
-# this file is installed by sys-kernel/installkernel
+# This script is installed by sys-kernel/installkernel, it is executed by the
+# traditional installkernel, NOT by systemd's kernel-install. I.e. this plugin
+# is run when the systemd USE flag is disabled or SYSTEMD_KERNEL_INSTALL=0 is
+# set in the environment.
 
 : "${GRUB_CFG:=/boot/grub/grub.cfg}"
 
