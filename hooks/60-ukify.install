@@ -40,6 +40,10 @@ main() {
 			exit 0
 	fi
 
+	if [[ -n ${INSTALLKERNEL_LAYOUT} && ${INSTALLKERNEL_LAYOUT} != uki ]]; then
+		exit 0
+	fi
+
 	# do nothing if somehow ukify is not installed
 	if [[ -x /usr/lib/systemd/ukify ]]; then
 		ukify=/usr/lib/systemd/ukify
