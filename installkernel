@@ -89,6 +89,44 @@ updatever() {
 	fi
 }
 
+if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
+	install_conf="${INSTALLKERNEL_CONF_ROOT}/install.conf"
+elif [ -f "/etc/kernel/install.conf" ]; then
+	install_conf="/etc/kernel/install.conf"
+elif [ -f "/usr/lib/kernel/install.conf" ]; then
+	install_conf="/usr/lib/kernel/install.conf"
+else
+	install_conf=
+fi
+
+if [ -f "${install_conf}" ]; then
+	echo "Reading ${install_conf}..."
+	. "${install_conf}"
+
+	if [ -n "${layout}" ]; then
+		echo "${install_conf} configures layout=${layout}"
+		if [ -z ${INSTALLKERNEL_LAYOUT} ]; then
+			INSTALLKERNEL_LAYOUT="${layout}"
+		fi
+	fi
+	if [ -n "${initrd_generator}" ]; then
+		echo "${install_conf} configures initrd_generator=${initrd_generator}"
+		if [ -z ${INSTALLKERNEL_INITRD_GENERATOR} ]; then
+			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
+		fi
+	fi
+	if [ -n "${uki_generator}" ]; then
+		echo "${install_conf} configures uki_generator=${uki_generator}"
+		if [ -z ${INSTALLKERNEL_UKI_GENERATOR} ]; then
+			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
+		fi
+	fi
+fi
+
+export INSTALLKERNEL_LAYOUT
+export INSTALLKERNEL_INITRD_GENERATOR
+export INSTALLKERNEL_UKI_GENERATOR
+
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
