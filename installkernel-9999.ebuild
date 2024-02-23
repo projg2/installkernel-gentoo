@@ -16,7 +16,10 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="dracut grub refind systemd systemd-boot uki ukify"
-REQUIRED_USE="systemd-boot? ( systemd )"
+REQUIRED_USE="
+	systemd-boot? ( systemd )
+	ukify? ( uki )
+"
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
