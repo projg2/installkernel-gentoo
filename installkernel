@@ -15,6 +15,10 @@
 SYSTEMD_KERNEL_INSTALL="${SYSTEMD_KERNEL_INSTALL:=0}"
 
 if [ "${SYSTEMD_KERNEL_INSTALL}" = "1" ] && command -v kernel-install >/dev/null; then
+	# If the ${0} of kernel-install is installkernel it takes its arguments
+	# in the same way we do here. We could use "exec -a ${0} .. ${@}" for this,
+	# but the -a argument is not POSIX, only bash.
+	# TODO: maybe revisit this if we ever bashify the script.
 	exec kernel-install add --verbose "${1}" "${2}"
 fi
 
