@@ -89,10 +89,10 @@ src_install() {
 	echo "# This file is managed by ${CATEGORY}/${PN}" >> "${T}/install.conf" || die
 	if use uki; then
 		echo "layout=uki" >> "${T}/install.conf" || die
-	elif use systemd-boot; then
-		echo "layout=bls" >> "${T}/install.conf" || die
 	elif use grub; then
 		echo "layout=grub" >> "${T}/install.conf" || die
+	elif use systemd-boot; then
+		echo "layout=bls" >> "${T}/install.conf" || die
 	else
 		echo "layout=compat" >> "${T}/install.conf" || die
 	fi
