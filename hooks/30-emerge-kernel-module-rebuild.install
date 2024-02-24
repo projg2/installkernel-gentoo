@@ -111,7 +111,7 @@ main() {
 		)
 	fi
 
-	for dir in ${candidates[@]}; do
+	for dir in "${candidates[@]}"; do
 		if [[ -d ${dir} ]]; then
 			KERNEL_DIR="${dir}"
 			break
