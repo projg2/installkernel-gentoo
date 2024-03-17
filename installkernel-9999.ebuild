@@ -42,6 +42,10 @@ RDEPEND="
 	)
 	efistub? (
 		>=app-emulation/virt-firmware-24.2_p20240315-r2
+		|| (
+			sys-apps/systemd[boot(-)]
+			sys-apps/systemd-utils[boot(-)]
+		)
 	)
 	grub? ( sys-boot/grub )
 	refind? ( sys-boot/refind )
