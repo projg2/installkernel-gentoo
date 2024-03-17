@@ -3,6 +3,8 @@
 
 EAPI=8
 
+inherit linux-info
+
 DESCRIPTION="Gentoo fork of installkernel script from debianutils"
 HOMEPAGE="
 	https://github.com/projg2/installkernel-gentoo
@@ -15,23 +17,31 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="dracut grub refind systemd systemd-boot uki ukify"
+IUSE="dracut efistub grub refind systemd systemd-boot uki ukify"
 REQUIRED_USE="
+	efistub? ( systemd )
 	systemd-boot? ( systemd )
 	ukify? ( uki )
-	?? ( grub refind systemd-boot )
+	?? ( efistub grub refind systemd-boot )
 "
+# efistub requires systemd's kernel-install because:
+# - We need support for removal to clean-up the created entry
+# - We need to know the location of the ESP
+# - kernel-bootcfg at some point calls bootctl (to find ESP)
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	dracut? (
-		>=sys-kernel/dracut-060_pre20240104-r1
+		>=sys-kernel/dracut-060_pre20240104-r4
 		uki? (
 			|| (
 				sys-apps/systemd[boot(-)]
 				sys-apps/systemd-utils[boot(-)]
 			)
 		)
+	)
+	efistub? (
+		>=app-emulation/virt-firmware-24.2_p20240315-r2
 	)
 	grub? ( sys-boot/grub )
 	refind? ( sys-boot/refind )
@@ -63,6 +73,11 @@ RDEPEND="
 	!<=sys-apps/systemd-254.5-r1
 " # Block against systemd that still installs dummy install.conf
 
+
+pkg_setup() {
+	use efistub && CONFIG_CHECK="EFI_STUB" linux-info_pkg_setup
+}
+
 src_install() {
 	keepdir /etc/kernel/postinst.d
 	keepdir /etc/kernel/preinst.d
@@ -80,6 +95,7 @@ src_install() {
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
+	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 	use refind && doexe hooks/systemd/95-refind-copy-icon.install
 
@@ -93,6 +109,8 @@ src_install() {
 	echo "# This file is managed by ${CATEGORY}/${PN}" >> "${T}/install.conf" || die
 	if use uki; then
 		echo "layout=uki" >> "${T}/install.conf" || die
+	elif use efistub; then
+		echo "layout=efistub" >> "${T}/install.conf" || die
 	elif use grub; then
 		echo "layout=grub" >> "${T}/install.conf" || die
 	elif use systemd-boot; then
@@ -162,5 +180,12 @@ pkg_postinst() {
 				elog "in a layout that systemd-boot understands and to automatically"
 				elog "update systemd-boot's configuration on each kernel install."
 		fi
+	fi
+
+	if use efistub && ! has_version "${CATEGORY}/${PN}[efistub]"; then
+		ewarn "Automated EFI Stub booting is highly experimental. UEFI implementations"
+		ewarn "often differ between vendors and as a result EFI stub booting is not"
+		ewarn "guaranteed to work for all UEFI systems. Ensure an alternative method"
+		ewarn "of booting the system is available before rebooting."
 	fi
 }

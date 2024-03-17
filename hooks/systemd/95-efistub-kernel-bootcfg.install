@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# Copyright 2023-2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+BOOT_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+if [ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]; then
+    LOGLEVEL="--loglevel info"
+else
+    LOGLEVEL="--loglevel error"
+fi
+
+if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+	# UKI layout contains only UKIs
+	UKI="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.efi"
+	if [[ ${COMMAND} == add ]]; then
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries"
+		kernel-bootcfg ${LOGLEVEL} --add-uki "${UKI}" --title "${KERNEL_VERSION}-uki" --once || exit 1
+	elif [[ ${COMMAND} == remove ]]; then
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries"
+		kernel-bootcfg ${LOGLEVEL} --remove-uki "${UKI}" || exit 1
+	fi
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
+	KERNEL_IMAGE="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/kernel-${KERNEL_VERSION}-plain.efi"
+	UKI="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/kernel-${KERNEL_VERSION}.efi"
+	INITRD="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/initramfs-${KERNEL_VERSION}.img"
+	if [[ ${COMMAND} == add ]]; then
+		KERNEL_BOOTCFG_ARGS=(
+			${LOGLEVEL}
+			--once
+		)
+		if [[ -f ${UKI} ]]; then
+			KERNEL_BOOTCFG_ARGS+=(
+				--add-uki "${UKI}"
+				--title "${KERNEL_VERSION}-uki"
+			)
+			[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries"
+		else
+			# From 90-loadentry.install
+			if [ -n "${KERNEL_INSTALL_CONF_ROOT}" ]; then
+				if [ -f "${KERNEL_INSTALL_CONF_ROOT}/cmdline" ]; then
+					BOOT_OPTIONS="$(tr -s "${IFS}" ' ' <"${KERNEL_INSTALL_CONF_ROOT}/cmdline")"
+				fi
+			elif [ -f /etc/kernel/cmdline ]; then
+				BOOT_OPTIONS="$(tr -s "${IFS}" ' ' </etc/kernel/cmdline)"
+			elif [ -f /usr/lib/kernel/cmdline ]; then
+				BOOT_OPTIONS="$(tr -s "${IFS}" ' ' </usr/lib/kernel/cmdline)"
+			else
+				BOOT_OPTIONS="$(tr -s "${IFS}" '\n' </proc/cmdline | grep -ve '^BOOT_IMAGE=' -e '^initrd=' | tr '\n' ' ')"
+			fi
+			# Append initramfs to cmdline if it exists
+			if [[ -f ${INITRD} ]]; then
+				INITRD_EFI_PATH="${INITRD#${KERNEL_INSTALL_BOOT_ROOT}}"
+				INITRD_EFI_PATH_DOS="${INITRD_EFI_PATH//\//\\}"
+				BOOT_OPTIONS="${BOOT_OPTIONS} initrd=${INITRD_EFI_PATH_DOS}"
+			fi
+
+			if [[ -n ${BOOT_OPTIONS} ]]; then
+				KERNEL_BOOTCFG_ARGS+=( --cmdline "${BOOT_OPTIONS}" )
+			fi
+			KERNEL_BOOTCFG_ARGS+=(
+				--add-uki "${KERNEL_IMAGE}"
+				--title "${KERNEL_VERSION}"
+			)
+			[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${KERNEL_IMAGE} to UEFI boot entries with cmdline ${BOOT_OPTIONS}"
+		fi
+		kernel-bootcfg "${KERNEL_BOOTCFG_ARGS[@]}" || exit 1
+	elif [[ ${COMMAND} == remove ]]; then
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries"
+		kernel-bootcfg ${LOGLEVEL} --remove-uki "${UKI}" || exit 1
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${KERNEL_IMAGE} from UEFI boot entries"
+		kernel-bootcfg ${LOGLEVEL} --remove-uki "${KERNEL_IMAGE}" || exit 1
+	fi
+else
+	exit 0
+fi

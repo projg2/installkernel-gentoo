@@ -11,35 +11,45 @@ KERNEL_VERSION="${2}"
 BOOT_DIR_ABS="${3}"
 KERNEL_IMAGE="${4}"
 
-if [[ ${KERNEL_INSTALL_LAYOUT} != "grub" && ${KERNEL_INSTALL_LAYOUT} != "compat" ]]; then
+if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+	# kernel-install insists on using the EFI partition as BOOT_ROOT. And ignores
+	# the variable if it does not point to the root of a FAT partition.
+	# This is what we want for systemd-boot, but it is definitely not what we want
+	# for GRUB. grub-install (by default) installs a grub efi executable that
+	# always loads /boot/grub/grub.cfg, this will break if the BOOT_ROOT is not
+	# /boot which may be the case if the ESP is not mounted there.
+	#
+	# Instead ignore what kernel-install tells us, and mirror what the -systemd
+	# variant of this plugin does and always install to /boot
+	KERNEL_INSTALL_ROOT="/boot"
+	SUFFIX=
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
+	# For efistub layout, we relocate /boot to the ESP
+	KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo"
+	# Some vendors enforce that booted EFI executables have the .efi suffix.
+	# We also want to be able to distinguish between an UKI and a regular
+	# kernel image with an .efi suffix.
+	SUFFIX="-plain.efi"
+else
 	exit 0
 fi
 
-# kernel-install insists on using the EFI partition as BOOT_ROOT. And ignores
-# the variable if it does not point to the root of a FAT partition.
-# This is what we want for systemd-boot, but it is definitely not what we want
-# for GRUB. grub-install (by default) installs a grub efi executable that
-# always loads /boot/grub/grub.cfg, this will break if the BOOT_ROOT is not
-# /boot which may be the case if the ESP is not mounted there.
-#
-# Instead ignore what kernel-install tells us, and mirror what the -systemd
-# variant of this plugin does and always install to /boot
-KERNEL_INSTALL_BOOT_ROOT="/boot"
-
 if [[ ${COMMAND} == add ]]; then
 	UKI="${KERNEL_INSTALL_STAGING_AREA}/uki.efi"
+	mkdir -p "${KERNEL_INSTALL_ROOT}" || exit 1
 	if [[ -f ${UKI} ]]; then
-		cp "${UKI}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" || exit 1
+		cp "${UKI}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}.efi" || exit 1
 	else
-		cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" || exit 1
+		cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
 		INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
 		if [[ -f ${INITRD} ]]; then
-			cp "${INITRD}" "${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
+			cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 		fi
 	fi
 elif [[ ${COMMAND} == remove ]]; then
 	rm -f \
-		"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.efi" \
-		"${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}" \
-		"${KERNEL_INSTALL_BOOT_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
+		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}.efi" \
+		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" \
+		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}" \
+		"${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 fi
