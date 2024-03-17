@@ -9,16 +9,9 @@ installkernel \- install a new kernel image
 installs a new kernel image onto the system from the Linux source
 tree. It is called by the Linux kernel makefiles when
 .B make install
-is invoked there.
+is invoked there, and also by portage when distribution kernels are installed.
 .P
-If systemd's kernel-install is present on the system and the environment
-variable
-.B SYSTEMD_KERNEL_INSTALL
-is set to 1, then it is called to install the kernel. The default setting
-for this environment variable is controlled by the ebuild.
-See the kernel-install manual for more information on how to configure it.
-.P
-If the new kernel is an unified kernel image, it is installed into
+If an unified kernel image was generated, it is installed as
 .IR {directory}/vmlinuz-{version}.efi .
 Otherwise, the new kernel is installed into
 .IR {directory}/vmlinuz-{version} .
@@ -36,12 +29,69 @@ If the directory containing
 .I System.map
 contains
 .I .config
-file, it is also installed.  If the directory containing
-.I zImage
-contains
+file, it is also installed.  If the directory containing the kernel image
+contains an
 .I initrd
 file, it is also installed.
+.P
+If systemd's kernel-install is present on the system and the environment
+variable
+.B SYSTEMD_KERNEL_INSTALL
+is set to 1, then it is called to install the kernel. The default setting
+for this environment variable is controlled by the installkernel ebuild. When
+kernel installation is delegated to systemd's kernel-install this manual is not
+applicable. See the kernel-install manual for more information. Systemd's
+kernel-install supports various different layouts, the default "compat" layout
+is similar, but not identical, to the layout used by this installkernel. The
+locations of plugin scripts, as well as recognized environment variables, are
+also different.
 .SH BUGS
 installkernel resides in /sbin only because the Linux kernel makefiles
 call it from there.  It should really be in /usr/sbin.  It isn't
 needed to boot a system.
+.SH PLUGINS
+Custom preinst and postinst plugin scripts may be installed into
+.IR /etc/kernel/preinst.d
+and
+.IR /etc/kernel/postinst.d.
+Plugins provided by packages should be installed into
+.IR /usr/lib/kernel/preinst.d
+and
+.IR /usr/lib/kernel/postinst.d
+instead.
+Plugin scripts that generate an initramfs should install the generated
+initramfs, named "initrd", in the same location as the kernel image. Plugin
+scripts that generate an unified kernel image should install the generated UKI,
+named "uki.efi", in the same location as the kernel image.
+The environment variables
+.B INSTALLKERNEL_PREINST_PLUGINS
+and
+.B INSTALLKERNEL_POSTINST_PLUGINS
+may be used to provide a custom list of plugin scripts to execute
+.P
+The settings
+.RS
+.IP \(bu (bullet)
+layout
+.IP \(bu (bullet)
+initrd_generator
+.IP \(bu (bullet)
+uki_generator
+.RE
+are read from
+.IR /usr/lib/kernel/install.conf
+and/or
+.IR /etc/kernel/install.conf
+, where the latter takes precedence over the former. And exposed to the plugins
+as:
+.RS
+.IP \(bu (bullet)
+INSTALLKERNEL_LAYOUT
+.IP \(bu (bullet)
+INSTALLKERNEL_INITRD_GENERATOR
+.IP \(bu (bullet)
+INSTALLKERNEL_UKI_GENERATOR
+.RE
+respectively. If the environment variable
+.B INSTALLKERNEL_CONF_ROOT
+is set, then the install.conf at this location is used instead.
