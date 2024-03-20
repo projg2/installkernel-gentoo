@@ -29,27 +29,20 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 	# Some vendors enforce that booted EFI executables have the .efi suffix.
 	# We also want to be able to distinguish between an UKI and a regular
 	# kernel image with an .efi suffix.
-	SUFFIX="-plain.efi"
+	SUFFIX=".efi"
 else
 	exit 0
 fi
 
 if [[ ${COMMAND} == add ]]; then
-	UKI="${KERNEL_INSTALL_STAGING_AREA}/uki.efi"
 	mkdir -p "${KERNEL_INSTALL_ROOT}" || exit 1
-	if [[ -f ${UKI} ]]; then
-		cp "${UKI}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}.efi" || exit 1
-	else
-		cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
-		INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
-		if [[ -f ${INITRD} ]]; then
-			cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
-		fi
+	cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
+	INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
+	if [[ -f ${INITRD} ]]; then
+		cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 	fi
 elif [[ ${COMMAND} == remove ]]; then
 	rm -f \
-		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}.efi" \
 		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" \
-		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}" \
 		"${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 fi

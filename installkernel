@@ -143,7 +143,7 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ] && [ ${#} -le 3 ]; then
 	for candidate in /boot/EFI /boot/efi /boot /efi; do
 		if [ -d ${candidate}/EFI/Gentoo ]; then
 			dir=${candidate}/EFI/Gentoo
-			suffix=-plain.efi
+			suffix=.efi
 		else
 			continue
 		fi
@@ -187,9 +187,9 @@ else
 fi
 
 # If we found a uki.efi, install it instead of kernel+initrd
-if [ -f "${uki}" ]; then
+if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 	suffix=.efi
-	if [ "${INSTALLKERNEL_LAYOUT}" = uki ] && [ ${#} -le 3 ]; then
+	if [ ${#} -le 3 ]; then
 		# Relocate to ESP
 		for candidate in /boot/EFI /boot/efi /boot /efi; do
 			if [ -d ${candidate}/EFI/Linux ]; then
@@ -200,9 +200,9 @@ if [ -f "${uki}" ]; then
 			fi
 		done
 	fi
-	updatever ${img_dest} "${uki}" "${suffix}"
+	updatever ${img_dest} "${uki}" ${suffix}
 else
-	updatever ${img_dest} "${img}" "${suffix}"
+	updatever ${img_dest} "${img}" ${suffix}
 	if [ -f "${initrd}" ]; then
 		updatever initramfs "${initrd}" .img
 	fi
