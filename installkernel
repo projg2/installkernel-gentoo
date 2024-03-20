@@ -61,8 +61,14 @@ dropindirs_sort() {
 updatever() {
 	if [ -f "${dir}/${1}-${ver}${3}" ]; then
 		# If they are hardlinked together, mv will fail.
-		rm -f "${dir}/${1}-${ver}${3}.old"
-		mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}${3}.old"
+		if [ "${3%.efi}" != "${3}" ]; then
+			# To EFI stub boot, file must have .efi suffix
+			rm -f "${dir}/${1}-${ver}-old${3}"
+			mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}-old${3}"
+		else
+			rm -f "${dir}/${1}-${ver}${3}.old"
+			mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}${3}.old"
+		fi
 	fi
 
 	cat "${2}" >"${dir}/${1}-${ver}${3}"
@@ -131,10 +137,23 @@ export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
 export INSTALLKERNEL_UKI_GENERATOR
 
+suffix=
+if [ "${INSTALLKERNEL_LAYOUT}" = efistub ] && [ ${#} -le 3 ]; then
+	# Relocate to ESP
+	for candidate in /boot/EFI /boot/efi /boot /efi; do
+		if [ -d ${candidate}/EFI/Gentoo ]; then
+			dir=${candidate}/EFI/Gentoo
+			suffix=-plain.efi
+		else
+			continue
+		fi
+	done
+fi
+
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
-if [ "${dir}" = "/boot" ]; then
+if [ ${#} -le 3 ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
@@ -170,10 +189,20 @@ fi
 # If we found a uki.efi, install it instead of kernel+initrd
 if [ -f "${uki}" ]; then
 	suffix=.efi
-	updatever ${img_dest} "${uki}" ${suffix}
+	if [ "${INSTALLKERNEL_LAYOUT}" = uki ] && [ ${#} -le 3 ]; then
+		# Relocate to ESP
+		for candidate in /boot/EFI /boot/efi /boot /efi; do
+			if [ -d ${candidate}/EFI/Linux ]; then
+				dir=${candidate}/EFI/Linux
+				img_dest=gentoo
+			else
+				continue
+			fi
+		done
+	fi
+	updatever ${img_dest} "${uki}" "${suffix}"
 else
-	suffix=
-	updatever ${img_dest} "${img}"
+	updatever ${img_dest} "${img}" "${suffix}"
 	if [ -f "${initrd}" ]; then
 		updatever initramfs "${initrd}" .img
 	fi
@@ -190,7 +219,7 @@ fi
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
-if [ "${dir}" = "/boot" ]; then
+if [ ${#} -le 3 ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
