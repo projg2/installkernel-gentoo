@@ -293,7 +293,7 @@ TEST_CASES["generic-uki -dracut -systemd -systemd-boot -uki -ukify grub -refind"
 /boot/config-${INST_KV}-gentoo-dist
 /boot/grub
 /boot/initramfs-${INST_KV}-gentoo-dist.img
-/boot/vmlinuz-${INST_KV}-gentoo-dist.efi
+/boot/vmlinuz-${INST_KV}-gentoo-dist
 /efi
 /efi/EFI
 /efi/EFI/Linux
