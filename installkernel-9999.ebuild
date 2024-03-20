@@ -185,7 +185,7 @@ pkg_postinst() {
 		fi
 	fi
 
-	if use efistub && ! has_version "${CATEGORY}/${PN}[efistub]"; then
+	if use efistub; then
 		ewarn "Automated EFI Stub booting is highly experimental. UEFI implementations"
 		ewarn "often differ between vendors and as a result EFI stub booting is not"
 		ewarn "guaranteed to work for all UEFI systems. Ensure an alternative method"
