@@ -138,16 +138,18 @@ export INSTALLKERNEL_INITRD_GENERATOR
 export INSTALLKERNEL_UKI_GENERATOR
 
 suffix=
-if [ "${INSTALLKERNEL_LAYOUT}" = efistub ] && [ ${#} -le 3 ]; then
-	# Relocate to ESP
-	for candidate in /boot/EFI /boot/efi /boot /efi; do
-		if [ -d ${candidate}/EFI/Gentoo ]; then
-			dir=${candidate}/EFI/Gentoo
-			suffix=.efi
-		else
-			continue
-		fi
-	done
+if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
+	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+		# Relocate to ESP
+		for candidate in /boot/EFI /boot/efi /boot /efi; do
+			if [ -d ${candidate}/EFI/Gentoo ]; then
+				dir=${candidate}/EFI/Gentoo
+				suffix=.efi
+			else
+				continue
+			fi
+		done
+	fi
 fi
 
 # If installing in the usual directory, run the same scripts that hook
@@ -189,7 +191,7 @@ fi
 # If we found a uki.efi, install it instead of kernel+initrd
 if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 	suffix=.efi
-	if [ ${#} -le 3 ]; then
+	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 		# Relocate to ESP
 		for candidate in /boot/EFI /boot/efi /boot /efi; do
 			if [ -d ${candidate}/EFI/Linux ]; then
