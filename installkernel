@@ -153,7 +153,7 @@ fi
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
-if [ ${#} -le 3 ]; then
+if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
@@ -219,7 +219,7 @@ fi
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
-if [ ${#} -le 3 ]; then
+if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 	(
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
