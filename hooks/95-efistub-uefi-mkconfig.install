@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Copyright 2020-2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by the
+# traditional installkernel, NOT by systemd's kernel-install. I.e. this plugin
+# is run when the systemd USE flag is disabled or SYSTEMD_KERNEL_INSTALL=0 is
+# set in the environment.
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
+ewarn() {
+	echo -e " ${NOCOLOR-\e[1;33m*\e[0m }${*}" >&2
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	# do nothing if somehow uefi-mkconfig is not installed
+	[[ -x $(command -v uefi-mkconfig) ]] || { ewarn "uefi-mkconfig command not available" && exit 0; }
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	einfo "Updating UEFI configuration"
+	uefi-mkconfig || die "uefi-mkconfig failed"
+}
+
+main

@@ -47,6 +47,10 @@ RDEPEND="
 				sys-apps/systemd-utils[boot(-)]
 			)
 		)
+		!systemd? (
+			sys-boot/efibootmgr
+			sys-boot/uefi-mkconfig
+		)
 	)
 	grub? ( sys-boot/grub )
 	refind? ( sys-boot/refind )
@@ -92,6 +96,7 @@ src_install() {
 
 	exeinto /usr/lib/kernel/postinst.d
 	use grub && doexe hooks/91-grub-mkconfig.install
+	use efistub && doexe hooks/95-efistub-uefi-mkconfig.install
 	use refind && doexe hooks/95-refind-copy-icon.install
 
 	exeinto /usr/lib/kernel/install.d
