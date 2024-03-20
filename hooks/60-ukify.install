@@ -37,13 +37,13 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
-	if [[ -n ${INSTALLKERNEL_UKI_GENERATOR} &&
+	if [[ -n "${INSTALLKERNEL_UKI_GENERATOR}" &&
 		${INSTALLKERNEL_UKI_GENERATOR} != ukify ]]; then
 			# We are not selected as the uki generator
 			exit 0
 	fi
 
-	if [[ -n ${INSTALLKERNEL_LAYOUT} && ${INSTALLKERNEL_LAYOUT} != uki ]]; then
+	if [[ -n "${INSTALLKERNEL_LAYOUT}" && ${INSTALLKERNEL_LAYOUT} != uki ]]; then
 		exit 0
 	fi
 

@@ -31,7 +31,7 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
-	if [[ -n ${INSTALLKERNEL_INITRD_GENERATOR} &&
+	if [[ -n "${INSTALLKERNEL_INITRD_GENERATOR}" &&
 		${INSTALLKERNEL_INITRD_GENERATOR} != dracut ]]; then
 			# We are not selected as the initrd generator
 			exit 0
