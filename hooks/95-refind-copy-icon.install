@@ -23,16 +23,7 @@ main() {
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
-	for dir in /boot/EFI /boot/efi /boot /efi; do
-		# If this kernel was moved by 90-uki-copy.install
-		local uki_path="${dir}/EFI/Linux/gentoo-$(basename ${img#*-})"
-		if [[ -f "${uki_path}" ]]; then
-			cp "${REFIND_ICON}" "${uki_path%.efi}.png" || die
-		fi
-	done
-
-	if [[ -f "${img}" ]]; then
-		# If this kernel was not moved by 90-uki-copy.install
+	if [[ ${INSTALLKERNEL_LAYOUT} == compat || ${INSTALLKERNEL_LAYOUT} == uki ]]; then
 		cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
 	fi
 }
