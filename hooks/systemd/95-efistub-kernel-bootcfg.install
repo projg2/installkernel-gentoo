@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#shellcheck disable=SC2034
 
 # Copyright 2023-2024 Gentoo Authors
 # This script is installed by sys-kernel/installkernel, it is executed by
@@ -26,7 +27,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 			exit 1
 		fi
 
-		PARTLABEL="$(df ${UKI} --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
+		PARTLABEL="$(df "${UKI}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
 		if [[ -n "${PARTLABEL}" ]]; then
 			TITLE="${KERNEL_VERSION} (UKI) on ${PARTLABEL}"
 		else
@@ -34,10 +35,10 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		fi
 
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries"
-		kernel-bootcfg ${LOGLEVEL} --add-uki "${UKI}" --title "${TITLE}" --once || exit 1
+		kernel-bootcfg "${LOGLEVEL}" --add-uki "${UKI}" --title "${TITLE}" --once || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries"
-		kernel-bootcfg ${LOGLEVEL} --remove-uki "${UKI}" || exit 1
+		kernel-bootcfg "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 	KERNEL_IMAGE="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/kernel-${KERNEL_VERSION}.efi"
@@ -50,7 +51,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		fi
 
 		KERNEL_BOOTCFG_ARGS=(
-			${LOGLEVEL}
+			"${LOGLEVEL}"
 			--once
 		)
 
@@ -69,7 +70,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 
 		# Append initramfs to cmdline if it exists
 		if [[ -f ${INITRD} ]]; then
-			INITRD_EFI_PATH="${INITRD#${KERNEL_INSTALL_BOOT_ROOT}}"
+			INITRD_EFI_PATH="${INITRD#"${KERNEL_INSTALL_BOOT_ROOT}"}"
 			INITRD_EFI_PATH_DOS="${INITRD_EFI_PATH//\//\\}"
 			BOOT_OPTIONS="${BOOT_OPTIONS} initrd=${INITRD_EFI_PATH_DOS}"
 		fi
@@ -78,7 +79,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 			KERNEL_BOOTCFG_ARGS+=( --cmdline "${BOOT_OPTIONS}" )
 		fi
 
-		PARTLABEL="$(df ${KERNEL_IMAGE} --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
+		PARTLABEL="$(df "${KERNEL_IMAGE}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
 		if [[ -n "${PARTLABEL}" ]]; then
 			TITLE="${KERNEL_VERSION} (plain) on ${PARTLABEL}"
 		else
@@ -94,7 +95,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		kernel-bootcfg "${KERNEL_BOOTCFG_ARGS[@]}" || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${KERNEL_IMAGE} from UEFI boot entries"
-		kernel-bootcfg ${LOGLEVEL} --remove-uki "${KERNEL_IMAGE}" || exit 1
+		kernel-bootcfg "${LOGLEVEL}" --remove-uki "${KERNEL_IMAGE}" || exit 1
 	fi
 else
 	exit 0
