@@ -111,6 +111,7 @@ fi
 
 if [ -f "${install_conf}" ]; then
 	echo "Reading ${install_conf}..."
+	# shellcheck source=/dev/null
 	. "${install_conf}"
 
 	if [ -n "${layout}" ]; then
