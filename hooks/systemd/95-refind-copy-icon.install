@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#shellcheck disable=SC2034
 
 # Copyright 2024 Gentoo Authors
 # This script is installed by sys-kernel/installkernel, it is executed by
