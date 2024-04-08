@@ -24,9 +24,7 @@ main() {
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
-	if [[ ${INSTALLKERNEL_LAYOUT} == compat || ${INSTALLKERNEL_LAYOUT} == uki ]]; then
-		cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
-	fi
+	cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
 }
 
 main
