@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#shellcheck disable=SC2034
 
 # Copyright 2024 Gentoo Authors
 # This script is installed by sys-kernel/installkernel, it is executed by
@@ -27,5 +28,12 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		cp "${REFIND_ICON}" "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
 		rm -f "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
+	fi
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" ]]; then
+	EFISTUB_DIR="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo"
+	if [[ ${COMMAND} == add ]]; then
+		cp "${REFIND_ICON}" "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" || exit 1
+	elif [[ ${COMMAND} == remove ]]; then
+		rm -f "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" || exit 1
 	fi
 fi

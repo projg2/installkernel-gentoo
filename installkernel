@@ -111,23 +111,24 @@ fi
 
 if [ -f "${install_conf}" ]; then
 	echo "Reading ${install_conf}..."
+	# shellcheck source=/dev/null
 	. "${install_conf}"
 
 	if [ -n "${layout}" ]; then
 		echo "${install_conf} configures layout=${layout}"
-		if [ -z ${INSTALLKERNEL_LAYOUT} ]; then
+		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
 			INSTALLKERNEL_LAYOUT="${layout}"
 		fi
 	fi
 	if [ -n "${initrd_generator}" ]; then
 		echo "${install_conf} configures initrd_generator=${initrd_generator}"
-		if [ -z ${INSTALLKERNEL_INITRD_GENERATOR} ]; then
+		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
 			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
 		fi
 	fi
 	if [ -n "${uki_generator}" ]; then
 		echo "${install_conf} configures uki_generator=${uki_generator}"
-		if [ -z ${INSTALLKERNEL_UKI_GENERATOR} ]; then
+		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
 			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
 		fi
 	fi
@@ -157,6 +158,7 @@ fi
 # /usr/sbin and /sbin, just as dpkg would.
 if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 	(
+		#shellcheck disable=SC2030
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
 		if [ -z "${INSTALLKERNEL_PREINST_PLUGINS}" ]; then
@@ -171,7 +173,7 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 			echo "Running ${plugin} ${ver} ${img}"
 			echo ""
-			"${plugin}" ${ver} "${img}"
+			"${plugin}" "${ver}" "${img}"
 		done
 	)
 fi
@@ -223,6 +225,7 @@ fi
 # /usr/sbin and /sbin, just as dpkg would.
 if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 	(
+		#shellcheck disable=SC2031
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
 
 		if [ -z "${INSTALLKERNEL_POSTINST_PLUGINS}" ]; then
@@ -237,7 +240,7 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 			echo "Running ${plugin} ${ver} ${dir}/${img_dest}-${ver}${suffix}"
 			echo ""
-			"${plugin}" ${ver} "${dir}/${img_dest}-${ver}${suffix}"
+			"${plugin}" "${ver}" "${dir}/${img_dest}-${ver}${suffix}"
 		done
 	)
 fi

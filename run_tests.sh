@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#shellcheck disable=SC2115
 
 cd /tmp || exit 1
 
