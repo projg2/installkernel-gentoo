@@ -12,7 +12,24 @@ KERNEL_VERSION="${2}"
 BOOT_DIR_ABS="${3}"
 KERNEL_IMAGE="${4}"
 
-: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_gentoo.png}"
+if [[ -f /etc/os-release ]]; then
+	# shellcheck source=/dev/null
+	. /etc/os-release
+elif [[ -f /usr/lib/os-release ]]; then
+	# shellcheck source=/dev/null
+	. /usr/lib/os-release
+fi
+
+# Set sane default if no or broken os-release
+: "${NAME:=Linux}"
+: "${ID:=linux}"
+
+: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
+
+if [[ ! -f ${REFIND_ICON} ]]; then
+	echo "REFIND_ICON=${REFIND_ICON} not found"
+	exit 1
+fi
 
 # Refind does not discover kernels in the bls layout
 if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
@@ -30,7 +47,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		rm -f "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" ]]; then
-	EFISTUB_DIR="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo"
+	EFISTUB_DIR="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}"
 	if [[ ${COMMAND} == add ]]; then
 		cp "${REFIND_ICON}" "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" || exit 1
 	elif [[ ${COMMAND} == remove ]]; then

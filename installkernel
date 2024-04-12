@@ -7,7 +7,7 @@
 # Copyright (C) 2009  Manoj Srivasta
 # Copyright 2020-2024 Gentoo Authors
 #
-# Install the kernel on a Gentoo Linux system.
+# Install the kernel on a Linux system.
 #
 # This script is called by the kernel's "make install" if it is installed as
 # /sbin/installkernel. It is also called by kernel-install.eclass.
@@ -138,13 +138,26 @@ export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
 export INSTALLKERNEL_UKI_GENERATOR
 
+if [ -f /etc/os-release ]; then
+	# shellcheck source=/dev/null
+	. /etc/os-release
+elif [ -f /usr/lib/os-release ]; then
+	# shellcheck source=/dev/null
+	. /usr/lib/os-release
+fi
+
+# Set sane default if no or broken os-release
+export NAME="${NAME:=Linux}"
+export ID="${ID:=linux}"
+export PRETTY_NAME="${PRETTY_NAME:=Linux}"
+
 suffix=
 if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 		# Relocate to ESP
 		for candidate in /boot/EFI /boot/efi /boot /efi; do
-			if [ -d ${candidate}/EFI/Gentoo ]; then
-				dir=${candidate}/EFI/Gentoo
+			if [ -d ${candidate}/EFI/${NAME} ]; then
+				dir=${candidate}/EFI/${NAME}
 				suffix=.efi
 			else
 				continue
@@ -198,7 +211,7 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 		for candidate in /boot/EFI /boot/efi /boot /efi; do
 			if [ -d ${candidate}/EFI/Linux ]; then
 				dir=${candidate}/EFI/Linux
-				img_dest=gentoo
+				img_dest=${ID}
 			else
 				continue
 			fi

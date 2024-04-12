@@ -25,8 +25,19 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat"
 	KERNEL_INSTALL_ROOT="/boot"
 	SUFFIX=
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
+	if [[ -f /etc/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /etc/os-release
+	elif [[ -f /usr/lib/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /usr/lib/os-release
+	fi
+
+	# Set sane default if no or broken os-release
+	: "${NAME:=Linux}"
+
 	# For efistub layout, we relocate /boot to the ESP
-	KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo"
+	KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}"
 	# Some vendors enforce that booted EFI executables have the .efi suffix.
 	# We also want to be able to distinguish between an UKI and a regular
 	# kernel image with an .efi suffix.

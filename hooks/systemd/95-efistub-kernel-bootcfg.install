@@ -41,8 +41,20 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		kernel-bootcfg "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
-	KERNEL_IMAGE="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/kernel-${KERNEL_VERSION}.efi"
-	INITRD="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Gentoo/initramfs-${KERNEL_VERSION}.img"
+
+	if [[ -f /etc/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /etc/os-release
+	elif [[ -f /usr/lib/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /usr/lib/os-release
+	fi
+
+	# Set sane default if no or broken os-release
+	: "${NAME:=Linux}"
+
+	KERNEL_IMAGE="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/kernel-${KERNEL_VERSION}.efi"
+	INITRD="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/initramfs-${KERNEL_VERSION}.img"
 
 	if [[ ${COMMAND} == add ]]; then
 		if [[ ! -f ${KERNEL_IMAGE} ]]; then

@@ -10,7 +10,7 @@
 ver=${1}
 img=${2}
 
-: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_gentoo.png}"
+: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -23,6 +23,10 @@ main() {
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	if [[ ! -f ${REFIND_ICON} ]]; then
+		die "REFIND_ICON=${REFIND_ICON} not found"
+	fi
 
 	cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
 }
