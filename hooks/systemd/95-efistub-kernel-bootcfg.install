@@ -13,9 +13,9 @@ BOOT_DIR_ABS="${3}"
 KERNEL_IMAGE="${4}"
 
 if [ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]; then
-    LOGLEVEL="--loglevel info"
+    LOGLEVEL="info"
 else
-    LOGLEVEL="--loglevel error"
+    LOGLEVEL="error"
 fi
 
 if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
@@ -27,21 +27,30 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 			exit 1
 		fi
 
+		unset PRETTY_NAME VERSION_ID
+		if [[ -f /etc/os-release ]]; then
+			# shellcheck source=/dev/null
+			. /etc/os-release
+		elif [[ -f /usr/lib/os-release ]]; then
+			# shellcheck source=/dev/null
+			. /usr/lib/os-release
+		fi
+
+		TITLE="${PRETTY_NAME:+$PRETTY_NAME }${VERSION_ID:+$VERSION_ID }${KERNEL_VERSION} (UKI)"
 		PARTLABEL="$(df "${UKI}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
-		if [[ -n "${PARTLABEL}" ]]; then
-			TITLE="${KERNEL_VERSION} (UKI) on ${PARTLABEL}"
-		else
-			TITLE="${KERNEL_VERSION} (UKI)"
+		if [[ -n ${PARTLABEL} ]]; then
+			TITLE="${TITLE} on ${PARTLABEL}"
 		fi
 
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries"
-		kernel-bootcfg "${LOGLEVEL}" --add-uki "${UKI}" --title "${TITLE}" --once || exit 1
+		kernel-bootcfg --loglevel "${LOGLEVEL}" --add-uki "${UKI}" --title "${TITLE}" --once || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries"
-		kernel-bootcfg "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
+		kernel-bootcfg --loglevel "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 
+	unset PRETTY_NAME VERSION_ID
 	if [[ -f /etc/os-release ]]; then
 		# shellcheck source=/dev/null
 		. /etc/os-release
@@ -63,7 +72,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		fi
 
 		KERNEL_BOOTCFG_ARGS=(
-			"${LOGLEVEL}"
+			--loglevel "${LOGLEVEL}"
 			--once
 		)
 
@@ -91,11 +100,10 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 			KERNEL_BOOTCFG_ARGS+=( --cmdline "${BOOT_OPTIONS}" )
 		fi
 
+		TITLE="${PRETTY_NAME:+$PRETTY_NAME }${VERSION_ID:+$VERSION_ID }${KERNEL_VERSION} (plain)"
 		PARTLABEL="$(df "${KERNEL_IMAGE}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
-		if [[ -n "${PARTLABEL}" ]]; then
-			TITLE="${KERNEL_VERSION} (plain) on ${PARTLABEL}"
-		else
-			TITLE="${KERNEL_VERSION} (plain)"
+		if [[ -n ${PARTLABEL} ]]; then
+			TITLE="${TITLE} on ${PARTLABEL}"
 		fi
 
 		KERNEL_BOOTCFG_ARGS+=(
@@ -107,7 +115,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		kernel-bootcfg "${KERNEL_BOOTCFG_ARGS[@]}" || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${KERNEL_IMAGE} from UEFI boot entries"
-		kernel-bootcfg "${LOGLEVEL}" --remove-uki "${KERNEL_IMAGE}" || exit 1
+		kernel-bootcfg --loglevel "${LOGLEVEL}" --remove-uki "${KERNEL_IMAGE}" || exit 1
 	fi
 else
 	exit 0
