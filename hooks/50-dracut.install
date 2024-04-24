@@ -70,10 +70,10 @@ main() {
 	# be a combined kernel+initramfs UEFI executable. We can easily
 	# recognize it by PE magic (vs cpio for a regular initramfs)
 	if [[ -s ${tmp} ]]; then
-		read -nr 2 magic <"${tmp}"
+		read -rn 2 magic <"${tmp}" || die "Cannot read ${tmp}"
 		if [[ ${magic} == MZ ]]; then
 			einfo "Combined UEFI kernel+initramfs executable found"
-			mv "${tmp}" "${uki}" || die "Failed to rename initramfs"
+			mv "${tmp}" "${uki}" || die "Failed to rename UKI"
 		else
 			einfo "Plain initramfs image found"
 			mv "${tmp}" "${initrd}" || die "Failed to rename initramfs"
