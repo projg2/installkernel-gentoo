@@ -27,7 +27,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 			exit 1
 		fi
 
-		unset PRETTY_NAME VERSION_ID
+		unset PRETTY_NAME NAME VERSION_ID
 		if [[ -f /etc/os-release ]]; then
 			# shellcheck source=/dev/null
 			. /etc/os-release
@@ -41,7 +41,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
 			TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (UKI)"
 		else
-			TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (UKI)"
+			TITLE="${KERNEL_INSTALL_ENTRY_TOKEN} ${KERNEL_VERSION} (UKI)"
 		fi
 
 		PARTLABEL="$(df "${UKI}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
@@ -57,7 +57,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 
-	unset PRETTY_NAME VERSION_ID
+	unset PRETTY_NAME NAME VERSION_ID
 	if [[ -f /etc/os-release ]]; then
 		# shellcheck source=/dev/null
 		. /etc/os-release
@@ -112,7 +112,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
 			TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (plain)"
 		else
-			TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (plain)"
+			TITLE="${KERNEL_INSTALL_ENTRY_TOKEN} ${KERNEL_VERSION} (plain)"
 		fi
 
 		PARTLABEL="$(df "${KERNEL_IMAGE}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
