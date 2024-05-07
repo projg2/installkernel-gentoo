@@ -37,12 +37,12 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		fi
 
 		if [[ -n "${PRETTY_NAME}" ]]; then
-            TITLE="${PRETTY_NAME} ${KERNEL_VERSION} (UKI)"
-        elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
-            TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (UKI)"
-        else
-            TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (UKI)"
-        fi
+			TITLE="${PRETTY_NAME} ${KERNEL_VERSION} (UKI)"
+		elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
+			TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (UKI)"
+		else
+			TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (UKI)"
+		fi
 
 		PARTLABEL="$(df "${UKI}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
 		if [[ -n ${PARTLABEL} ]]; then
@@ -108,12 +108,12 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		fi
 
 		if [[ -n "${PRETTY_NAME}" ]]; then
-            TITLE="${PRETTY_NAME} ${KERNEL_VERSION} (plain)"
-        elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
-            TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (plain)"
-        else
-            TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (plain)"
-        fi
+			TITLE="${PRETTY_NAME} ${KERNEL_VERSION} (plain)"
+		elif [[ -n "${NAME}" ]] && [[ -n "${VERSION_ID}" ]]; then
+			TITLE="${NAME} ${VERSION_ID} ${KERNEL_VERSION} (plain)"
+		else
+			TITLE="${ENTRY_TOKEN} ${KERNEL_VERSION} (plain)"
+		fi
 
 		PARTLABEL="$(df "${KERNEL_IMAGE}" --output=source | tail -1 | xargs -r lsblk --output=PARTLABEL --noheadings)"
 		if [[ -n ${PARTLABEL} ]]; then
