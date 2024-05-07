@@ -58,22 +58,18 @@ TEST_CASES["-generic-uki -dracut -systemd -systemd-boot uki ukify -grub -refind"
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-3 directories, 3 files"
+3 directories, 1 file"
 TEST_CASES["-generic-uki -dracut -systemd -systemd-boot uki ukify grub -refind"]=\
 "/boot
 /boot/grub
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-5 directories, 3 files"
+5 directories, 1 file"
 TEST_CASES["-generic-uki -dracut systemd -systemd-boot -uki -ukify -grub -refind"]=\
 "/boot
 /boot/kernel-${INST_KV}-gentoo-dist
@@ -157,43 +153,35 @@ TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki -ukify -grub -refind"
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-3 directories, 3 files"
+3 directories, 1 file"
 TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki -ukify grub -refind"]=\
 "/boot
 /boot/grub
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-5 directories, 3 files"
+5 directories, 1 files"
 TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki ukify -grub -refind"]=\
 "/boot
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-3 directories, 3 files"
+3 directories, 1 file"
 TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki ukify grub -refind"]=\
 "/boot
 /boot/grub
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-5 directories, 3 files"
+5 directories, 1 file"
 TEST_CASES["-generic-uki dracut systemd -systemd-boot -uki -ukify -grub -refind"]=\
 "/boot
 /boot/initramfs-${INST_KV}-gentoo-dist.img
@@ -305,22 +293,18 @@ TEST_CASES["generic-uki -dracut -systemd -systemd-boot uki -ukify -grub -refind"
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-3 directories, 3 files"
+3 directories, 1 file"
 TEST_CASES["generic-uki -dracut -systemd -systemd-boot uki -ukify grub -refind"]=\
 "/boot
 /boot/grub
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-5 directories, 3 files"
+5 directories, 1 file"
 TEST_CASES["generic-uki -dracut systemd -systemd-boot -uki -ukify -grub -refind"]=\
 "/boot
 /boot/initramfs-${INST_KV}-gentoo-dist.img
@@ -395,12 +379,10 @@ TEST_CASES["-generic-uki -dracut -systemd -systemd-boot uki ukify -grub refind"]
 /efi
 /efi/EFI
 /efi/EFI/Linux
-/efi/EFI/Linux/System.map-${INST_KV}-gentoo-dist
-/efi/EFI/Linux/config-${INST_KV}-gentoo-dist
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.png
 
-3 directories, 4 files"
+3 directories, 2 files"
 TEST_CASES["-generic-uki -dracut systemd -systemd-boot -uki -ukify -grub refind"]=\
 "/boot
 /boot/kernel-${INST_KV}-gentoo-dist
