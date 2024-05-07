@@ -223,14 +223,14 @@ else
 	if [ -f "${initrd}" ]; then
 		updatever initramfs "${initrd}" .img
 	fi
-fi
 
-updatever System.map "${map}"
+	updatever System.map "${map}"
 
-config=$(dirname "${map}")
-config="${config}/.config"
-if [ -f "${config}" ]; then
-	updatever config "${config}"
+	config=$(dirname "${map}")
+	config="${config}/.config"
+	if [ -f "${config}" ]; then
+		updatever config "${config}"
+	fi
 fi
 
 # If installing in the usual directory, run the same scripts that hook
