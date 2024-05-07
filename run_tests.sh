@@ -164,7 +164,7 @@ TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki -ukify grub -refind"]
 /efi/EFI/Linux
 /efi/EFI/Linux/gentoo-${INST_KV}-gentoo-dist.efi
 
-5 directories, 1 files"
+5 directories, 1 file"
 TEST_CASES["-generic-uki dracut -systemd -systemd-boot uki ukify -grub -refind"]=\
 "/boot
 /efi
