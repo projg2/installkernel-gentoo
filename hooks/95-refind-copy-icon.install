@@ -18,6 +18,10 @@ die() {
 	exit 1
 }
 
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
 main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
