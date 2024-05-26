@@ -40,10 +40,12 @@ main() {
 	if [[ -n "${INSTALLKERNEL_UKI_GENERATOR}" &&
 		${INSTALLKERNEL_UKI_GENERATOR} != ukify ]]; then
 			# We are not selected as the uki generator
+			einfo "uki_generator=${INSTALLKERNEL_UKI_GENERATOR}, skipping ukify"
 			exit 0
 	fi
 
 	if [[ -n "${INSTALLKERNEL_LAYOUT}" && ${INSTALLKERNEL_LAYOUT} != uki ]]; then
+		einfo "layout=${INSTALLKERNEL_LAYOUT}, skipping ukify"
 		exit 0
 	fi
 

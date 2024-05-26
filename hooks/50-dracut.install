@@ -34,6 +34,7 @@ main() {
 	if [[ -n "${INSTALLKERNEL_INITRD_GENERATOR}" &&
 		${INSTALLKERNEL_INITRD_GENERATOR} != dracut ]]; then
 			# We are not selected as the initrd generator
+			einfo "initrd_generator=${INSTALLKERNEL_INITRD_GENERATOR}, skipping dracut"
 			exit 0
 	fi
 
@@ -50,12 +51,15 @@ main() {
 	)
 
 	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
+		einfo "Using dracut as the initramfs and UKI generator..."
 		initramfs_gen_args+=( --uefi )
 		out="${uki}"
 	elif [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
+		einfo "Using dracut as the initramfs generator..."
 		initramfs_gen_args+=( --no-uefi )
 		out="${initrd}"
 	else
+		einfo "No install.conf preference set, falling back to dracut.conf..."
 		out="${tmp}"
 	fi
 
@@ -66,7 +70,8 @@ main() {
 
 	dracut "${initramfs_gen_args[@]}" || die "Failed to generate initramfs"
 
-	# if dracut is used in uefi=yes mode, initrd will actually
+	# Fallback path for if we don't know if we generated an initramfs or
+	# UKI. If dracut is used in uefi=yes mode, initrd will actually
 	# be a combined kernel+initramfs UEFI executable. We can easily
 	# recognize it by PE magic (vs cpio for a regular initramfs)
 	if [[ -s ${tmp} ]]; then

@@ -28,6 +28,7 @@ main() {
 		die "REFIND_ICON=${REFIND_ICON} not found"
 	fi
 
+	einfo "Copying rEFInd icon file..."
 	cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
 }
 

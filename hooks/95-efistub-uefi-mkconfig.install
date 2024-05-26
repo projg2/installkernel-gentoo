@@ -29,7 +29,7 @@ main() {
 
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
-	einfo "Updating UEFI configuration"
+	einfo "Updating UEFI configuration..."
 	uefi-mkconfig || die "uefi-mkconfig failed"
 }
 

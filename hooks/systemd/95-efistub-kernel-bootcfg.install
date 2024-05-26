@@ -23,7 +23,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 
 	if [[ ${COMMAND} == add ]]; then
 		if [[ ! -f ${UKI} ]]; then
-			echo "UKI not found, exiting"
+			echo "layout=uki, but no UKI was found, exiting"
 			exit 1
 		fi
 
@@ -49,10 +49,10 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 			TITLE="${TITLE} on ${PARTLABEL}"
 		fi
 
-		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries"
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${UKI} to UEFI boot entries..."
 		kernel-bootcfg --loglevel "${LOGLEVEL}" --add-uki "${UKI}" --title "${TITLE}" --once || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
-		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries"
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${UKI} from UEFI boot entries..."
 		kernel-bootcfg --loglevel "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
@@ -74,7 +74,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 
 	if [[ ${COMMAND} == add ]]; then
 		if [[ ! -f ${KERNEL_IMAGE} ]]; then
-			echo "Kernel image not found, exiting"
+			echo "No kernel image was found, exiting"
 			exit 1
 		fi
 
@@ -135,10 +135,10 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 			--title "${TITLE}"
 		)
 
-		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${KERNEL_IMAGE} to UEFI boot entries with cmdline ${BOOT_OPTIONS}"
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Adding ${KERNEL_IMAGE} to UEFI boot entries with cmdline ${BOOT_OPTIONS}..."
 		kernel-bootcfg "${KERNEL_BOOTCFG_ARGS[@]}" || exit 1
 	elif [[ ${COMMAND} == remove ]]; then
-		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${KERNEL_IMAGE} from UEFI boot entries"
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo "Removing ${KERNEL_IMAGE} from UEFI boot entries..."
 		kernel-bootcfg --loglevel "${LOGLEVEL}" --remove-uki "${KERNEL_IMAGE}" || exit 1
 	fi
 else

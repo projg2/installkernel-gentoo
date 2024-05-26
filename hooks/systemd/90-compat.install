@@ -49,20 +49,24 @@ fi
 if [[ ${COMMAND} == add ]]; then
 	mkdir -p "${KERNEL_INSTALL_ROOT}" || exit 1
 
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Installing kernel image for ${KERNEL_VERSION}..."
 	cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
 
 	INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
 	if [[ -f ${INITRD} ]]; then
+		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Installing initramfs image for ${KERNEL_VERSION}..."
 		cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
 	fi
 
 	# Copy microcode to ESP so we can add it to the efistub entry
 	for CPU in intel amd; do
 		if [[ -f "${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}" ]]; then
+			[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying microcode for ${CPU} CPU..."
 			cp "${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}" "${KERNEL_INSTALL_ROOT}/${CPU}-uc.img" || exit 1
 		fi
 	done
 elif [[ ${COMMAND} == remove ]]; then
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Removing kernel and initramfs image for ${KERNEL_VERSION}..."
 	rm -f \
 		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" \
 		"${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1

@@ -148,6 +148,7 @@ fi
 # USE=dist-kernel doesn't make sense here, we would end up rebuilding twice.
 # Instruct linux-mod(-r1).eclass (via linux-info.eclass) to use the just
 # installed kernel instead of the eselected one.
+[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Rebuilding out-of-tree kernel modules..."
 env -i \
 	PATH="${PATH}" \
 	FEATURES="-getbinpkg -buildpkg -ebuild-locks parallel-install" \

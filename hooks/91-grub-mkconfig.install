@@ -36,7 +36,7 @@ main() {
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
 	if [[ -f ${GRUB_CFG} ]]; then
-		einfo "Backing up existing grub config as ${GRUB_CFG}~"
+		einfo "Backing up existing grub config as ${GRUB_CFG}~..."
 		cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
 	fi
 
@@ -49,7 +49,7 @@ main() {
 	"}"
 	export GRUB_LINUX_KERNEL_GLOBS
 
-	einfo "Generating new GRUB config as ${GRUB_CFG}"
+	einfo "Generating new GRUB config as ${GRUB_CFG}..."
 	local dname="${GRUB_CFG%/*}"
 	mkdir -vp "${dname}" || die "Failed to mkdir ${dname}"
 	# Exit non-fatally to ensure emerge does not fail completely in containers
