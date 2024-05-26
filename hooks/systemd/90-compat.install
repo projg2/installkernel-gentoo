@@ -42,6 +42,19 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 	# We also want to be able to distinguish between an UKI and a regular
 	# kernel image with an .efi suffix.
 	SUFFIX=".efi"
+else
+	exit 0
+fi
+
+if [[ ${COMMAND} == add ]]; then
+	mkdir -p "${KERNEL_INSTALL_ROOT}" || exit 1
+
+	cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
+
+	INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
+	if [[ -f ${INITRD} ]]; then
+		cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
+	fi
 
 	# Copy microcode to ESP so we can add it to the efistub entry
 	for CPU in intel amd; do
@@ -49,17 +62,6 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 			cp "${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}" "${KERNEL_INSTALL_ROOT}/${CPU}-uc.img" || exit 1
 		fi
 	done
-else
-	exit 0
-fi
-
-if [[ ${COMMAND} == add ]]; then
-	mkdir -p "${KERNEL_INSTALL_ROOT}" || exit 1
-	cp "${KERNEL_IMAGE}" "${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" || exit 1
-	INITRD="${KERNEL_INSTALL_STAGING_AREA}/initrd"
-	if [[ -f ${INITRD} ]]; then
-		cp "${INITRD}" "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" || exit 1
-	fi
 elif [[ ${COMMAND} == remove ]]; then
 	rm -f \
 		"${KERNEL_INSTALL_ROOT}/kernel-${KERNEL_VERSION}${SUFFIX}" \
