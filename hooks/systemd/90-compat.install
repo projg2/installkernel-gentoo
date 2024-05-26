@@ -42,6 +42,13 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 	# We also want to be able to distinguish between an UKI and a regular
 	# kernel image with an .efi suffix.
 	SUFFIX=".efi"
+
+	# Copy microcode to ESP so we can add it to the efistub entry
+	for CPU in intel amd; do
+		if [[ -f "${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}" ]]; then
+			cp "${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}" "${KERNEL_INSTALL_ROOT}/${CPU}-uc.img" || exit 1
+		fi
+	done
 else
 	exit 0
 fi

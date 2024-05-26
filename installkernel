@@ -159,6 +159,12 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 			if [ -d "${candidate}/EFI/${NAME}" ]; then
 				dir=${candidate}/EFI/${NAME}
 				suffix=.efi
+				if [ -f "/boot/intel-uc.img" ]; then
+					cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
+				fi
+				if [ -f "/boot/amd-uc.img" ]; then
+					cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
+				fi
 			else
 				continue
 			fi

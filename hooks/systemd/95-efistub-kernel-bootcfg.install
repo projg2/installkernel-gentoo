@@ -96,6 +96,16 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 			BOOT_OPTIONS="$(tr -s "${IFS}" '\n' </proc/cmdline | grep -ve '^BOOT_IMAGE=' -e '^initrd=' | tr '\n' ' ')"
 		fi
 
+		# Append microcode to cmdline if it exists
+		for CPU in intel amd; do
+			UCODE="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/${CPU}-uc.img"
+			if [[ -f "${UCODE}" ]]; then
+				UCODE_EFI_PATH="${UCODE#"${KERNEL_INSTALL_BOOT_ROOT}"}"
+				UCODE_EFI_PATH_DOS="${UCODE_EFI_PATH//\//\\}"
+				BOOT_OPTIONS="${BOOT_OPTIONS} initrd=${UCODE_EFI_PATH_DOS}"
+			fi
+		done
+
 		# Append initramfs to cmdline if it exists
 		if [[ -f ${INITRD} ]]; then
 			INITRD_EFI_PATH="${INITRD#"${KERNEL_INSTALL_BOOT_ROOT}"}"

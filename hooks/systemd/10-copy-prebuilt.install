@@ -26,3 +26,13 @@ if [ -f "${UKI}" ]; then
 	echo "Copying prebuilt UKI to staging area"
 	cp "${UKI}" "${KERNEL_INSTALL_STAGING_AREA}/uki.efi" || exit 1
 fi
+
+if [ -f "/boot/intel-uc.img" ]; then
+	echo "Copying prebuilt Intel early microcode image to staging area"
+	cp "/boot/intel-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-intel" || exit 1
+fi
+
+if [ -f "/boot/amd-uc.img" ]; then
+	echo "Copying prebuilt AMD early microcode image to staging area"
+	cp "/boot/amd-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-amd" || exit 1
+fi

@@ -65,6 +65,10 @@ main() {
 		--output="${basedir}/uki.efi"
 	)
 
+	for cpu in intel amd; do
+		[[ -f "/boot/${cpu}-uc.img" ]] && ukify_gen_args+=(--initrd="/boot/${cpu}-uc.img")
+	done
+
 	initrd="${basedir}/initrd"
 	[[ -f ${initrd} ]] && ukify_gen_args+=(--initrd="${initrd}")
 
