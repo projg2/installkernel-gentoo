@@ -110,6 +110,7 @@ src_install() {
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
+	doexe hooks/systemd/99-zz-update-static.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use refind && doexe hooks/systemd/95-refind-copy-icon.install
