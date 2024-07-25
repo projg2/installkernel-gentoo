@@ -37,6 +37,13 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
 	if [[ ${COMMAND} == add ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying rEFInd icon file..."
 		cp "${REFIND_ICON}" "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.png" || exit 1
+		if [[ -L ${KERNEL_INSTALL_BOOT_ROOT}/kernel ]]; then
+			ln -sf "kernel-${KERNEL_VERSION}.png" \
+				"${KERNEL_INSTALL_BOOT_ROOT}/kernel.png" || exit 1
+		elif [[ -f ${KERNEL_INSTALL_BOOT_ROOT}/kernel ]]; then
+			cp "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.png" \
+				"${KERNEL_INSTALL_BOOT_ROOT}/kernel.png" || exit 1
+		fi
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Removing rEFInd icon file..."
 		rm -f "${KERNEL_INSTALL_BOOT_ROOT}/kernel-${KERNEL_VERSION}.png" || exit 1
@@ -46,6 +53,13 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 	if [[ ${COMMAND} == add ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying rEFInd icon file..."
 		cp "${REFIND_ICON}" "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
+		if [[ -L ${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}.efi ]]; then
+			ln -sf "${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" \
+				"${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}.png" || exit 1
+		elif [[ -f ${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}.efi ]]; then
+			cp "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" \
+				"${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}.png" || exit 1
+		fi
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Removing rEFInd icon file..."
 		rm -f "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
@@ -55,6 +69,13 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" ]]; then
 	if [[ ${COMMAND} == add ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying rEFInd icon file..."
 		cp "${REFIND_ICON}" "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" || exit 1
+		if [[ -L ${EFISTUB_DIR}/kernel.efi ]]; then
+			ln -sf "kernel-${KERNEL_VERSION}.png" \
+				"${EFISTUB_DIR}/kernel.png" || exit 1
+		elif [[ -f ${EFISTUB_DIR}/kernel.efi ]]; then
+			cp "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" \
+				"${EFISTUB_DIR}/kernel.png" || exit 1
+		fi
 	elif [[ ${COMMAND} == remove ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Removing rEFInd icon file..."
 		rm -f "${EFISTUB_DIR}/kernel-${KERNEL_VERSION}.png" || exit 1
