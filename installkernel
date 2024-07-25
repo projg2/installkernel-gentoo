@@ -59,7 +59,7 @@ dropindirs_sort() {
 
 # Create backups of older versions before installing
 updatever() {
-	local oldsuffix="${3}.old"
+	oldsuffix="${3}.old"
 	if [ "${3%.efi}" != "${3}" ]; then
 		# Some UEFIs enforce .efi suffix, so if using efi files retain suffix
 		oldsuffix="-old${3}"
