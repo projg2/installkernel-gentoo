@@ -54,7 +54,7 @@ main() {
 	fi
 
 	if [[ -L ${icon_nover} ]]; then
-		if [[ "$(readlink -f "${icon_nover}")" == ${icon} ]]; then
+		if [[ "$(readlink -f "${icon_nover}")" == "${icon}" ]]; then
 			ln -sf "$(basename "${icon_old}")" "${icon_nover_old}" || die
 		else
 			mv "${icon_nover}" "${icon_nover_old}" || die
