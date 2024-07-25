@@ -54,17 +54,17 @@ main() {
 	fi
 
 	if [[ -L ${icon_nover} ]]; then
-		if [[ $(readlink -f "${icon_nover}") == ${icon} ]]; then
-			ln -sf "$(basename ${icon_old})" "${icon_nover_old}" || die
+		if [[ "$(readlink -f "${icon_nover}")" == ${icon} ]]; then
+			ln -sf "$(basename "${icon_old}")" "${icon_nover_old}" || die
 		else
 			mv "${icon_nover}" "${icon_nover_old}" || die
 		fi
-		ln -sf "$(basename ${icon})" "${icon_nover}" || die
+		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${icon_nover} ]]; then
 		mv "${icon_nover}" "${icon_nover_old}" || die
 		cp "${icon}" "${icon_nover}" || die
 	elif [[ -L ${img//-${ver}/} ]]; then
-		ln -sf "$(basename ${icon})" "${icon_nover}" || die
+		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${img//-${ver}/} ]]; then
 		cp "${icon}" "${icon_nover}" || die
 	fi
