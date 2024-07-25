@@ -33,7 +33,41 @@ main() {
 	fi
 
 	einfo "Copying rEFInd icon file..."
-	cp "${REFIND_ICON}" "${img%.efi}.png" || die "Failed to copy icon file"
+	local icon="${img%.efi}.png"
+	local icon_old=${icon%.png}.old.png
+	if [[ ${INSTALLKERNEL_LAYOUT} == efistub ||
+			${INSTALLKERNEL_LAYOUT} == uki ]]; then
+		icon_old=${icon%.png}-old.png
+	fi
+	# If already installed, then move icon for the .old kernel
+	if [[ -f ${icon} ]]; then
+		mv "${icon}" "${icon_old}" || die
+	fi
+	cp "${REFIND_ICON}" "${icon}" || die "Failed to copy icon file"
+
+	# If there is a version-less image, install an icon for it
+	local icon_nover=${icon//-${ver}/}
+	local icon_nover_old=${icon_nover%.png}.old.png
+	if [[ ${INSTALLKERNEL_LAYOUT} == efistub ||
+			${INSTALLKERNEL_LAYOUT} == uki ]]; then
+		icon_nover_old=${icon_nover%.png}-old.png
+	fi
+
+	if [[ -L ${icon_nover} ]]; then
+		if [[ $(readlink -f "${icon_nover}") == ${icon} ]]; then
+			ln -sf "$(basename ${icon_old})" "${icon_nover_old}" || die
+		else
+			mv "${icon_nover}" "${icon_nover_old}" || die
+		fi
+		ln -sf "$(basename ${icon})" "${icon_nover}" || die
+	elif [[ -f ${icon_nover} ]]; then
+		mv "${icon_nover}" "${icon_nover_old}" || die
+		cp "${icon}" "${icon_nover}" || die
+	elif [[ -L ${img//-${ver}/} ]]; then
+		ln -sf "$(basename ${icon})" "${icon_nover}" || die
+	elif [[ -f ${img//-${ver}/} ]]; then
+		cp "${icon}" "${icon_nover}" || die
+	fi
 }
 
 main
