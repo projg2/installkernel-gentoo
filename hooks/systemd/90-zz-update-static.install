@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+#shellcheck disable=SC2034
+
+# Copyright 2023-2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+BOOT_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+if [[ ${COMMAND} != add ]]; then
+	exit 0
+fi
+
+if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+	# kernel-install insists on using the EFI partition as BOOT_ROOT. And ignores
+	# the variable if it does not point to the root of a FAT partition.
+	# This is what we want for systemd-boot, but it is definitely not what we want
+	# for GRUB. grub-install (by default) installs a grub efi executable that
+	# always loads /boot/grub/grub.cfg, this will break if the BOOT_ROOT is not
+	# /boot which may be the case if the ESP is not mounted there.
+	#
+	# Instead ignore what kernel-install tells us, and mirror what the -systemd
+	# variant of this plugin does and always install to /boot
+	KERNEL_INSTALL_ROOT="/boot"
+	SUFFIX=
+	STATIC_KERNEL_NAME="kernel"
+
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" || ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+	if [[ -f /etc/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /etc/os-release
+	elif [[ -f /usr/lib/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /usr/lib/os-release
+	fi
+
+	# Set sane default if no or broken os-release
+	: "${NAME:=Linux}"
+	: "${ID:=linux}"
+
+	# For efistub layout, we relocate /boot to the ESP
+	if [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" ]]; then
+		KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}"
+		STATIC_KERNEL_NAME="kernel"
+	elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+		KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux"
+		STATIC_KERNEL_NAME="${KERNEL_INSTALL_ENTRY_TOKEN}"
+	fi
+	# Some vendors enforce that booted EFI executables have the .efi suffix.
+	# We also want to be able to distinguish between an UKI and a regular
+	# kernel image with an .efi suffix.
+	SUFFIX=".efi"
+else
+	exit 0
+fi
+
+if [[ -L ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Updating static symlink for ${KERNEL_VERSION}..."
+	ln -sf "${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${SUFFIX}" \
+		"${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX}" || exit 1
+	if [[ -f ${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img ]]; then
+		ln -sf "initramfs-${KERNEL_VERSION}.img" \
+			"${KERNEL_INSTALL_ROOT}/initramfs.img" || exit 1
+	fi
+elif [[ -f ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Updating static file for ${KERNEL_VERSION}..."
+	cp "${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${SUFFIX}" \
+		"${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX}" || exit 1
+	if [[ -f ${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img ]]; then
+		cp "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" \
+			"${KERNEL_INSTALL_ROOT}/initramfs.img" || exit 1
+	fi
+fi
+
