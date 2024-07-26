@@ -29,6 +29,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat"
 	KERNEL_INSTALL_ROOT="/boot"
 	SUFFIX=
 	STATIC_KERNEL_NAME="kernel"
+	TRIES=
 
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" || ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 	if [[ -f /etc/os-release ]]; then
@@ -47,9 +48,18 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" || ${KERNEL_INSTALL_LAYOUT} == "uk
 	if [[ ${KERNEL_INSTALL_LAYOUT} == "efistub" ]]; then
 		KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}"
 		STATIC_KERNEL_NAME="kernel"
+		TRIES=
 	elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		KERNEL_INSTALL_ROOT="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux"
 		STATIC_KERNEL_NAME="${KERNEL_INSTALL_ENTRY_TOKEN}"
+
+		TRIES_FILE=${KERNEL_INSTALL_CONF_ROOT:-/etc/kernel}/tries
+		if [[ -f ${TRIES_FILE} ]]; then
+			read -r TRIES <"${TRIES_FILE}" || exit 1
+			TRIES="+${TRIES}"
+		else
+			TRIES=
+		fi
 	fi
 	# Some vendors enforce that booted EFI executables have the .efi suffix.
 	# We also want to be able to distinguish between an UKI and a regular
@@ -61,7 +71,7 @@ fi
 
 if [[ -L ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
 	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Updating static symlink for ${KERNEL_VERSION}..."
-	ln -sf "${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${SUFFIX}" \
+	ln -sf "${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${TRIES}${SUFFIX}" \
 		"${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX}" || exit 1
 	if [[ -f ${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img ]]; then
 		ln -sf "initramfs-${KERNEL_VERSION}.img" \
@@ -69,7 +79,7 @@ if [[ -L ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
 	fi
 elif [[ -f ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
 	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Updating static file for ${KERNEL_VERSION}..."
-	cp "${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${SUFFIX}" \
+	cp "${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${TRIES}${SUFFIX}" \
 		"${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX}" || exit 1
 	if [[ -f ${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img ]]; then
 		cp "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" \
