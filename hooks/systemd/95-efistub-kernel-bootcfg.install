@@ -19,6 +19,26 @@ else
 fi
 
 if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+	if [[ -f ${KERNEL_INSTALL_CONF_ROOT:-/etc/kernel}/tries ]]; then
+		echo "ERROR: Boot counting not supported, but tries file exists"
+		exit 1
+	fi
+
+	if ! command -v kernel-bootcfg >/dev/null; then
+		echo "ERROR: kernel-bootcfg command not available"
+		exit 1
+	fi
+
+	if command -v kernel-bootcfg >/dev/null; then
+		if [[ $(systemctl is-enabled kernel-bootcfg-boot-successful.service) != enabled ]]; then
+			echo "ERROR: kernel-bootcfg-boot-successful service not enabled"
+			exit 1
+		fi
+	else
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo \
+			"WARNING: Cannot check if kernel-bootcfg-boot-successful service is enabled"
+	fi
+
 	UKI="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.efi"
 
 	if [[ ${COMMAND} == add ]]; then
@@ -56,6 +76,20 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		kernel-bootcfg --loglevel "${LOGLEVEL}" --remove-uki "${UKI}" || exit 1
 	fi
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
+	if ! command -v kernel-bootcfg >/dev/null; then
+		echo "ERROR: kernel-bootcfg command not available"
+		exit 1
+	fi
+
+	if command -v kernel-bootcfg >/dev/null; then
+		if [[ $(systemctl is-enabled kernel-bootcfg-boot-successful.service) != enabled ]]; then
+			echo "ERROR: kernel-bootcfg-boot-successful service not enabled"
+			exit 1
+		fi
+	else
+		[[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ]] && echo \
+			"WARNING: Cannot check if kernel-bootcfg-boot-successful service is enabled"
+	fi
 
 	unset PRETTY_NAME NAME VERSION_ID
 	if [[ -f /etc/os-release ]]; then
