@@ -51,6 +51,10 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
 elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 	UKI_DIR="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux"
 	if [[ ${COMMAND} == add ]]; then
+		if [[ -f ${KERNEL_INSTALL_CONF_ROOT:-/etc/kernel}/tries ]]; then
+			echo "ERROR: Boot counting not supported, but tries file exists"
+			exit 1
+		fi
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying rEFInd icon file..."
 		cp "${REFIND_ICON}" "${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}.png" || exit 1
 		if [[ -L ${UKI_DIR}/${KERNEL_INSTALL_ENTRY_TOKEN}.efi ]]; then
