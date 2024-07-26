@@ -29,7 +29,7 @@ if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		exit 1
 	fi
 
-	if command -v kernel-bootcfg >/dev/null; then
+	if command -v systemctl >/dev/null; then
 		if [[ $(systemctl is-enabled kernel-bootcfg-boot-successful.service) != enabled ]]; then
 			echo "ERROR: kernel-bootcfg-boot-successful service not enabled"
 			exit 1
@@ -81,7 +81,7 @@ elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
 		exit 1
 	fi
 
-	if command -v kernel-bootcfg >/dev/null; then
+	if command -v systemctl >/dev/null; then
 		if [[ $(systemctl is-enabled kernel-bootcfg-boot-successful.service) != enabled ]]; then
 			echo "ERROR: kernel-bootcfg-boot-successful service not enabled"
 			exit 1
