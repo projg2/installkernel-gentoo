@@ -75,18 +75,18 @@ main() {
 	INSTALLKERNEL_PLUGINS="${INSTALLKERNEL_PREINST_PLUGINS:+${INSTALLKERNEL_PREINST_PLUGINS} }${INSTALLKERNEL_POSTINST_PLUGINS}"
 
 	echo -e \
-		"$(LC_ALL=C date)\t" \
-		"gentoo\t" \
-		"${ver:-notset}\t" \
-		"${INSTALLKERNEL_CONF_ROOT:-notset}\t" \
-		"${INSTALLKERNEL_LAYOUT:-notset}\t" \
-		"${INSTALLKERNEL_INITRD_GENERATOR:-notset}\t" \
-		"${INSTALLKERNEL_UKI_GENERATOR:-notset}\t" \
-		"${install_dir:-notset}\t" \
-		"${kernel#"${install_dir}/"}\t" \
-		"${initrd#"${install_dir}/"}\t" \
-		"${INSTALLKERNEL_PLUGINS:-notset}\t" \
-			>> "${log}" || exit 1
+"$(LC_ALL=C date)\t"\
+"gentoo\t"\
+"${ver:-notset}\t"\
+"${INSTALLKERNEL_CONF_ROOT:-notset}\t"\
+"${INSTALLKERNEL_LAYOUT:-notset}\t"\
+"${INSTALLKERNEL_INITRD_GENERATOR:-notset}\t"\
+"${INSTALLKERNEL_UKI_GENERATOR:-notset}\t"\
+"${install_dir:-notset}\t"\
+"${kernel#"${install_dir}/"}\t"\
+"${initrd#"${install_dir}/"}\t"\
+"${INSTALLKERNEL_PLUGINS:-notset}\t"\
+>> "${log}" || exit 1
 }
 
 main
