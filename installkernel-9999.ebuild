@@ -98,6 +98,7 @@ src_install() {
 	keepdir /etc/kernel/preinst.d
 
 	exeinto /usr/lib/kernel/preinst.d
+	doexe hooks/99-check-diskspace.install
 	use dracut && doexe hooks/50-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
@@ -109,6 +110,7 @@ src_install() {
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
+	doexe hooks/systemd/85-check-diskspace.install
 	doexe hooks/systemd/90-compat.install
 	doexe hooks/systemd/90-zz-update-static.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install

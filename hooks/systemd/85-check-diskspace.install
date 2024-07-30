@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#shellcheck disable=SC2034
+
+# Copyright 2023-2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+BOOT_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+if [[ ${COMMAND} != add ]]; then
+	exit 0
+fi
+
+if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+	KERNEL_INSTALL_BOOT_ROOT="/boot"
+fi
+
+[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Checking available disk space on ${KERNEL_INSTALL_BOOT_ROOT}..."
+
+space_kbi=$(df -Pk "${KERNEL_INSTALL_BOOT_ROOT}" 2>/dev/null | awk 'FNR == 2 {print $4}')
+
+if [[ ${?} == 0 && -n ${space_kbi} ]]; then
+	# Add the typical size of a refind icon(8) and bls entry(4) file to be safe
+	required=15
+	if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
+		UKI=${KERNEL_INSTALL_STAGING_AREA}/uki.efi
+		if [[ -f ${UKI} ]]; then
+			required=$((${required} + $(du -kx "${UKI}" | awk 'FNR == 1 {print $1}')))
+		fi
+	else
+		required=$((${required} + $(du -kx "${KERNEL_IMAGE}" | awk 'FNR == 1 {print $1}')))
+		INITRD=${KERNEL_INSTALL_STAGING_AREA}/initrd
+		if [[ -f ${INITRD} ]]; then
+			required=$((${required} + $(du -kx "${INITRD}" | awk 'FNR == 1 {print $1}')))
+		fi
+		for CPU in intel amd; do
+			UCODE=${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}
+			if [[ -f ${UCODE} ]]; then
+				required=$((${required} + $(du -kx "${UCODE}" | awk 'FNR == 1 {print $1}')))
+			fi
+		done
+	fi
+	if [[ ${space_kbi} -lt ${required} ]]; then
+		echo "ERROR: Not enough disk space. Need at least ${required} KiB, found ${space_kbi} KiB."
+		echo "Please use app-admin/eclean-kernel to clean up old kernels."
+		exit 1
+	else
+		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+			"Disk space okay. Need at least ${required} KiB, found ${space_kbi} KiB."
+		exit 0
+	fi
+else
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "WARNING: Failed to determine disk space."
+	exit 0
+fi

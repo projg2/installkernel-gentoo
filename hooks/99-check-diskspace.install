@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#shellcheck disable=SC2034
+
+# Copyright 2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by the
+# traditional installkernel, NOT by systemd's kernel-install. I.e. this plugin
+# is run when the systemd USE flag is disabled or SYSTEMD_KERNEL_INSTALL=0 is
+# set in the environment.
+
+ver=${1}
+img=${2}
+basedir=$(dirname "${img}")
+initrd=${basedir}/initrd
+uki=${basedir}/uki.efi
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+einfo() {
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+}
+
+ewarn() {
+	echo -e " ${NOCOLOR-\e[1;33m*\e[0m }${*}" >&2
+}
+
+eerror() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+}
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	local install_dir=/boot
+	if [[ ${INSTALLKERNEL_LAYOUT} == "uki" ]]; then
+		for candidate in /boot/EFI /boot/efi /boot /efi; do
+			if [[ -d ${candidate}/EFI/Linux ]]; then
+				install_dir=${candidate}/EFI/Linux
+			else
+				continue
+			fi
+		done
+	elif [[ ${INSTALLKERNEL_LAYOUT} == "efistub" ]]; then
+		for candidate in /boot/EFI /boot/efi /boot /efi; do
+			if [[ -d ${candidate}/EFI/${NAME} ]]; then
+				install_dir=${candidate}/EFI/${NAME}
+			else
+				continue
+			fi
+		done
+	fi
+
+	einfo "Checking available disk space on ${install_dir}..."
+
+	local space_kbi=$(df -Pk "${install_dir}" 2>/dev/null | awk 'FNR == 2 {print $4}')
+
+	if [[ ${?} == 0 && -n ${space_kbi} ]]; then
+		# Add the typical size of a refind icon(8), bls entry(4) file, typical
+		# config (272) and System.map(9852)
+		local required=10200
+		if [[ ${INSTALLKERNEL_LAYOUT} == "uki" ]]; then
+			if [[ -f ${uki} ]]; then
+				required=$((${required} + $(du -kx "${uki}" | awk 'FNR == 1 {print $1}')))
+			fi
+		else
+			required=$((${required} + $(du -kx "${img}" | awk 'FNR == 1 {print $1}')))
+			INITRD=${INSTALLKERNEL_STAGING_AREA}/initrd
+			if [[ -f ${initrd} ]]; then
+				required=$((${required} + $(du -kx "${initrd}" | awk 'FNR == 1 {print $1}')))
+			fi
+		fi
+		if [[ ${space_kbi} -lt ${required} ]]; then
+			eerror "Not enough disk space. Need at least ${required} KiB, found ${space_kbi} KiB."
+			die "Please use app-admin/eclean-kernel to clean up old kernels."
+		else
+			einfo "Disk space okay. Need at least ${required} KiB, found ${space_kbi} KiB."
+		fi
+	else
+		ewarn "Failed to determine disk space."
+	fi
+}
+
+main
