@@ -30,18 +30,18 @@ if [[ ${?} == 0 && -n ${space_kbi} ]]; then
 	if [[ ${KERNEL_INSTALL_LAYOUT} == "uki" ]]; then
 		UKI=${KERNEL_INSTALL_STAGING_AREA}/uki.efi
 		if [[ -f ${UKI} ]]; then
-			required=$((${required} + $(du -kx "${UKI}" | awk 'FNR == 1 {print $1}')))
+			required=$((required + $(du -kx "${UKI}" | awk 'FNR == 1 {print $1}')))
 		fi
 	else
-		required=$((${required} + $(du -kx "${KERNEL_IMAGE}" | awk 'FNR == 1 {print $1}')))
+		required=$((required + $(du -kx "${KERNEL_IMAGE}" | awk 'FNR == 1 {print $1}')))
 		INITRD=${KERNEL_INSTALL_STAGING_AREA}/initrd
 		if [[ -f ${INITRD} ]]; then
-			required=$((${required} + $(du -kx "${INITRD}" | awk 'FNR == 1 {print $1}')))
+			required=$((required + $(du -kx "${INITRD}" | awk 'FNR == 1 {print $1}')))
 		fi
 		for CPU in intel amd; do
 			UCODE=${KERNEL_INSTALL_STAGING_AREA}/microcode-${CPU}
 			if [[ -f ${UCODE} ]]; then
-				required=$((${required} + $(du -kx "${UCODE}" | awk 'FNR == 1 {print $1}')))
+				required=$((required + $(du -kx "${UCODE}" | awk 'FNR == 1 {print $1}')))
 			fi
 		done
 	fi

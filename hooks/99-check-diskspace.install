@@ -57,8 +57,8 @@ main() {
 	fi
 
 	einfo "Checking available disk space on ${install_dir}..."
-
-	local space_kbi=$(df -Pk "${install_dir}" 2>/dev/null | awk 'FNR == 2 {print $4}')
+	local space_kbi
+	space_kbi=$(df -Pk "${install_dir}" 2>/dev/null | awk 'FNR == 2 {print $4}')
 
 	if [[ ${?} == 0 && -n ${space_kbi} ]]; then
 		# Add the typical size of a refind icon(8), bls entry(4) file, typical
@@ -66,13 +66,13 @@ main() {
 		local required=10200
 		if [[ ${INSTALLKERNEL_LAYOUT} == "uki" ]]; then
 			if [[ -f ${uki} ]]; then
-				required=$((${required} + $(du -kx "${uki}" | awk 'FNR == 1 {print $1}')))
+				required=$((required + $(du -kx "${uki}" | awk 'FNR == 1 {print $1}')))
 			fi
 		else
-			required=$((${required} + $(du -kx "${img}" | awk 'FNR == 1 {print $1}')))
+			required=$((required + $(du -kx "${img}" | awk 'FNR == 1 {print $1}')))
 			INITRD=${INSTALLKERNEL_STAGING_AREA}/initrd
 			if [[ -f ${initrd} ]]; then
-				required=$((${required} + $(du -kx "${initrd}" | awk 'FNR == 1 {print $1}')))
+				required=$((required + $(du -kx "${initrd}" | awk 'FNR == 1 {print $1}')))
 			fi
 		fi
 		if [[ ${space_kbi} -lt ${required} ]]; then
