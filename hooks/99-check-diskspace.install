@@ -70,7 +70,6 @@ main() {
 			fi
 		else
 			required=$((required + $(du -kx "${img}" | awk 'FNR == 1 {print $1}')))
-			INITRD=${INSTALLKERNEL_STAGING_AREA}/initrd
 			if [[ -f ${initrd} ]]; then
 				required=$((required + $(du -kx "${initrd}" | awk 'FNR == 1 {print $1}')))
 			fi
