@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#shellcheck disable=SC2034
+
+# Copyright 2023-2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+COMMAND="${1}"
+KERNEL_VERSION="${2}"
+ENTRY_DIR_ABS="${3}"
+KERNEL_IMAGE="${4}"
+
+if [[ ${COMMAND} != add ]]; then
+	exit 0
+fi
+
+if [[ ${KERNEL_INSTALL_LAYOUT} == "grub" || ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+	KERNEL_INSTALL_BOOT_ROOT="/boot"
+	KERNEL="/boot/kernel-${KERNEL_VERSION}"
+	INITRD="/boot/initramfs-${KERNEL_VERSION}.img"
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "efistub"  ]]; then
+	if [[ -f /etc/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /etc/os-release
+	elif [[ -f /usr/lib/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /usr/lib/os-release
+	fi
+
+	# Set sane default if no or broken os-release
+	: "${NAME:=Linux}"
+
+	KERNEL="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/kernel-${KERNEL_VERSION}.efi"
+	INITRD="${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/initramfs-${KERNEL_VERSION}.img"
+elif [[ ${KERNEL_INSTALL_LAYOUT} == "uki"  ]]; then
+	TRIES_FILE=${KERNEL_INSTALL_CONF_ROOT:-/etc/kernel}/tries
+	if [[ -f ${TRIES_FILE} ]]; then
+		read -r TRIES <"${TRIES_FILE}" || exit 1
+		TRIES="+${TRIES}"
+	else
+		TRIES=
+	fi
+	KERNEL="${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/${KERNEL_INSTALL_ENTRY_TOKEN}-${KERNEL_VERSION}${TRIES}.efi"
+	INITRD=
+elif [[ ${KERNEL_INSTALL_LAYOUT} == bls ]]; then
+	KERNEL="${ENTRY_DIR_ABS}/linux"
+	INITRD="${ENTRY_DIR_ABS}/initrd"
+else
+	[[ $KERNEL_INSTALL_VERBOSE == 1 ]] && echo \
+		"WARNING: unknown layout, log will be incomplete"
+	KERNEL=unknown
+	INITRD=
+fi
+[[ ! -f ${INITRD} ]] && INITRD=unknown
+[[ ! -f ${KERNEL} ]] && KERNEL=unknown
+
+LOG=/var/log/installkernel.log
+
+[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Appending installed kernel to ${LOG}..."
+
+echo -e \
+	"$(LC_ALL=C date)\t" \
+	"systemd\t" \
+	"${KERNEL_VERSION:-notset}\t" \
+	"${KERNEL_INSTALL_CONF_ROOT:-notset}\t" \
+	"${KERNEL_INSTALL_LAYOUT:-notset}\t" \
+	"${KERNEL_INSTALL_INITRD_GENERATOR:-notset}\t" \
+	"${KERNEL_INSTALL_UKI_GENERATOR:-notset}\t" \
+	"${KERNEL_INSTALL_BOOT_ROOT:-notset}\t" \
+	"${KERNEL#${KERNEL_INSTALL_BOOT_ROOT}/}\t" \
+	"${INITRD#${KERNEL_INSTALL_BOOT_ROOT}/}\t" \
+	"${KERNEL_INSTALL_PLUGINS:-notset}\t" \
+		>> "${LOG}" || exit 1
+
+

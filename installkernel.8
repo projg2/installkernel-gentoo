@@ -34,6 +34,11 @@ contains an
 .I initrd
 file, it is also installed.
 .P
+Kernel installs are logged to
+.IR /var/log/installkernel.log
+in a tab separated file containing the columns:
+DATE, KI_VENDOR, VERSION, CONF_ROOT, LAYOUT, INITRD_GEN, UKI_GEN, BOOT_ROOT, KERNEL_REL_PATH, INITRD_REL_PATH and PLUGIN_OVERRIDE.
+.P
 If systemd's kernel-install is present on the system and the environment
 variable
 .B SYSTEMD_KERNEL_INSTALL
