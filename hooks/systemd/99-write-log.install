@@ -69,8 +69,8 @@ echo -e \
 	"${KERNEL_INSTALL_INITRD_GENERATOR:-notset}\t" \
 	"${KERNEL_INSTALL_UKI_GENERATOR:-notset}\t" \
 	"${KERNEL_INSTALL_BOOT_ROOT:-notset}\t" \
-	"${KERNEL#${KERNEL_INSTALL_BOOT_ROOT}/}\t" \
-	"${INITRD#${KERNEL_INSTALL_BOOT_ROOT}/}\t" \
+	"${KERNEL#"${KERNEL_INSTALL_BOOT_ROOT}/"}\t" \
+	"${INITRD#"${KERNEL_INSTALL_BOOT_ROOT}/"}\t" \
 	"${KERNEL_INSTALL_PLUGINS:-notset}\t" \
 		>> "${LOG}" || exit 1
 

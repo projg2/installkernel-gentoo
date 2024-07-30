@@ -83,8 +83,8 @@ main() {
 		"${INSTALLKERNEL_INITRD_GENERATOR:-notset}\t" \
 		"${INSTALLKERNEL_UKI_GENERATOR:-notset}\t" \
 		"${install_dir:-notset}\t" \
-		"${kernel#${install_dir}/}\t" \
-		"${initrd#${install_dir}/}\t" \
+		"${kernel#"${install_dir}/"}\t" \
+		"${initrd#"${install_dir}/"}\t" \
 		"${INSTALLKERNEL_PLUGINS:-notset}\t" \
 			>> "${log}" || exit 1
 }
