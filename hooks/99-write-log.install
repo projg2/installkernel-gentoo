@@ -74,6 +74,14 @@ main() {
 
 	INSTALLKERNEL_PLUGINS="${INSTALLKERNEL_PREINST_PLUGINS:+${INSTALLKERNEL_PREINST_PLUGINS} }${INSTALLKERNEL_POSTINST_PLUGINS}"
 
+	if [[ -z ${INSTALLKERNEL_CONF_ROOT} ]]; then
+		if [[ -f /etc/kernel/install.conf ]]; then
+			INSTALLKERNEL_CONF_ROOT=/etc/kernel
+		elif [[ -f /usr/lib/kernel/install.conf ]]; then
+			INSTALLKERNEL_CONF_ROOT=/usr/lib/kernel
+		fi
+	fi
+
 	echo -e \
 "$(LC_ALL=C date)\t"\
 "gentoo\t"\

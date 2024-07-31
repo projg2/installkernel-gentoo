@@ -60,6 +60,14 @@ LOG=/var/log/installkernel.log
 
 [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Appending installed kernel to ${LOG}..."
 
+if [[ -z ${KERNEL_INSTALL_CONF_ROOT} ]]; then
+	if [[ -f /etc/kernel/install.conf ]]; then
+		KERNEL_INSTALL_CONF_ROOT=/etc/kernel
+	elif [[ -f /usr/lib/kernel/install.conf ]]; then
+		KERNEL_INSTALL_CONF_ROOT=/usr/lib/kernel
+	fi
+fi
+
 echo -e \
 "$(LC_ALL=C date)\t"\
 "systemd\t"\
