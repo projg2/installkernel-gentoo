@@ -1,0 +1,10 @@
+/var/log/installkernel.log {
+	delaycompress
+	create
+	missingok
+	notifempty
+	postrotate
+		head -n1 $2 >> $1
+		tail -n1 $2 >> $1
+	endscript
+}
