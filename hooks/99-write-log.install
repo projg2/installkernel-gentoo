@@ -84,6 +84,7 @@ main() {
 	einfo "Appending installed kernel to ${log}..."
 
 
+	#shellcheck disable=SC2155
 	local logline=\
 "$(LC_ALL=C date)\t"\
 "gentoo\t"\
