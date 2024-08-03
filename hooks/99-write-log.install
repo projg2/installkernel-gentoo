@@ -68,10 +68,6 @@ main() {
 	[[ ! -f ${initrd} ]] && initrd=unknown
 	[[ ! -f ${kernel} ]] && kernel=unknown
 
-	local log=/var/log/installkernel.log
-
-	einfo "Appending installed kernel to ${log}..."
-
 	INSTALLKERNEL_PLUGINS="${INSTALLKERNEL_PREINST_PLUGINS:+${INSTALLKERNEL_PREINST_PLUGINS} }${INSTALLKERNEL_POSTINST_PLUGINS}"
 
 	if [[ -z ${INSTALLKERNEL_CONF_ROOT} ]]; then
@@ -82,7 +78,13 @@ main() {
 		fi
 	fi
 
-	echo -e \
+	local state=/var/lib/installkernel
+	local log=/var/log/installkernel.log
+
+	einfo "Appending installed kernel to ${log}..."
+
+
+	local logline=\
 "$(LC_ALL=C date)\t"\
 "gentoo\t"\
 "${ver:-notset}\t"\
@@ -93,8 +95,10 @@ main() {
 "${install_dir:-notset}\t"\
 "${kernel#"${install_dir}/"}\t"\
 "${initrd#"${install_dir}/"}\t"\
-"${INSTALLKERNEL_PLUGINS:-notset}\t"\
->> "${log}" || exit 1
+"${INSTALLKERNEL_PLUGINS:-notset}"
+
+	echo -e "${logline}" > "${state}" || exit 1
+	echo -e "${logline}" >> "${log}" || exit 1
 }
 
 main

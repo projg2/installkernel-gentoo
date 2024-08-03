@@ -56,10 +56,6 @@ fi
 [[ ! -f ${INITRD} ]] && INITRD=unknown
 [[ ! -f ${KERNEL} ]] && KERNEL=unknown
 
-LOG=/var/log/installkernel.log
-
-[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Appending installed kernel to ${LOG}..."
-
 if [[ -z ${KERNEL_INSTALL_CONF_ROOT} ]]; then
 	if [[ -f /etc/kernel/install.conf ]]; then
 		KERNEL_INSTALL_CONF_ROOT=/etc/kernel
@@ -68,7 +64,12 @@ if [[ -z ${KERNEL_INSTALL_CONF_ROOT} ]]; then
 	fi
 fi
 
-echo -e \
+STATE=/var/lib/installkernel
+LOG=/var/log/installkernel.log
+
+[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Appending installed kernel to ${LOG}..."
+
+LOGLINE=\
 "$(LC_ALL=C date)\t"\
 "systemd\t"\
 "${KERNEL_VERSION:-notset}\t"\
@@ -79,7 +80,7 @@ echo -e \
 "${KERNEL_INSTALL_BOOT_ROOT:-notset}\t"\
 "${KERNEL#"${KERNEL_INSTALL_BOOT_ROOT}/"}\t"\
 "${INITRD#"${KERNEL_INSTALL_BOOT_ROOT}/"}\t"\
-"${KERNEL_INSTALL_PLUGINS:-notset}\t"\
->> "${LOG}" || exit 1
+"${KERNEL_INSTALL_PLUGINS:-notset}"
 
-
+echo -e "${LOGLINE}" > "${STATE}" || exit 1
+echo -e "${LOGLINE}" >> "${LOG}" || exit 1
