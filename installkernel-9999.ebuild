@@ -170,7 +170,7 @@ src_install() {
 	doins "${T}/install.conf"
 
 	insinto /etc/logrotate.d
-	newinst installkernel.logrotate installkernel
+	newins installkernel.logrotate installkernel
 
 	into /
 	dosbin installkernel
