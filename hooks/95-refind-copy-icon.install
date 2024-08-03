@@ -19,7 +19,7 @@ die() {
 }
 
 einfo() {
-	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}" >&2
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}"
 }
 
 main() {
