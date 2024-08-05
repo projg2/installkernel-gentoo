@@ -78,7 +78,7 @@ main() {
 		fi
 	fi
 
-	local state=/var/lib/installkernel
+	local state=/var/lib/misc/installkernel
 	local log=/var/log/installkernel.log
 
 	einfo "Appending installed kernel to ${log}..."

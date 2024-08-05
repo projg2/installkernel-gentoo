@@ -64,7 +64,7 @@ if [[ -z ${KERNEL_INSTALL_CONF_ROOT} ]]; then
 	fi
 fi
 
-STATE=/var/lib/installkernel
+STATE=/var/lib/misc/installkernel
 LOG=/var/log/installkernel.log
 
 [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Appending installed kernel to ${LOG}..."
