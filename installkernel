@@ -19,7 +19,14 @@ if [ "${SYSTEMD_KERNEL_INSTALL}" = "1" ] && command -v kernel-install >/dev/null
 	# in the same way we do here. We could use "exec -a ${0} .. ${@}" for this,
 	# but the -a argument is not POSIX, only bash.
 	# TODO: maybe revisit this if we ever bashify the script.
-	exec kernel-install add --verbose "${1}" "${2}"
+	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+		# kernel-install does not support relocation (ignores $4, see manual)
+		exec kernel-install add --verbose "${1}" "${2}"
+	else
+		echo "WARNING: A custom installation directory is specified as fourth argument."
+		echo "WARNING: Systemd kernel-install does not support this. Falling back"
+		echo "WARNING: to legacy installkernel. SYSTEMD_KERNEL_INSTALL is ignored."
+	fi
 fi
 
 set -e
@@ -160,6 +167,7 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 				echo "Found vendor directory on ESP"
 				dir=${candidate}/EFI/${NAME}
 				suffix=.efi
+				# backwards compatibility
 				if [ -f "/boot/intel-uc.img" ]; then
 					cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
 				fi
@@ -203,6 +211,10 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 		done
 	)
+else
+	echo "WARNING: A custom installation directory is specified as fourth argument."
+	echo "WARNING: In this configuration running installation hooks is not supported."
+	echo "WARNING: All pre-installation hooks are ignored."
 fi
 
 # use the same input path as /usr/lib/kernel/install.d/50-dracut.install
@@ -283,6 +295,10 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 		done
 	)
+else
+	echo "WARNING: A custom installation directory is specified as fourth argument."
+	echo "WARNING: In this configuration running installation hooks is not supported."
+	echo "WARNING: All post-installation hooks are ignored."
 fi
 
 exit 0
