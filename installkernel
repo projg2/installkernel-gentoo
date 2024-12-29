@@ -160,9 +160,9 @@ export PRETTY_NAME="${PRETTY_NAME:=Linux}"
 
 suffix=
 if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
-	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+	if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]; then
 		# Relocate to ESP
-		for candidate in /boot/EFI /boot/efi /boot /efi; do
+		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
 			if [ -d "${candidate}/EFI/${NAME}" ]; then
 				echo "Found vendor directory on ESP"
 				dir=${candidate}/EFI/${NAME}
@@ -178,7 +178,7 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 				continue
 			fi
 		done
-		if [ "${dir}" = "/boot" ]; then
+		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
 			echo "layout=efistub set, but did not find vendor directory on ESP"
 			echo "Please create the EFI/${NAME} directory on the EFI System partition manually"
 		fi
@@ -232,9 +232,9 @@ fi
 # If we found a uki.efi, install it instead of kernel+initrd
 if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 	suffix=.efi
-	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+	if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]; then
 		# Relocate to ESP
-		for candidate in /boot/EFI /boot/efi /boot /efi; do
+		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
 			if [ -d "${candidate}/EFI/Linux" ]; then
 				echo "Found UKI directory on ESP"
 				dir=${candidate}/EFI/Linux
@@ -243,7 +243,7 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 				continue
 			fi
 		done
-		if [ "${dir}" = "/boot" ]; then
+		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
 			echo "layout=uki set, but did not find the UKI directory on ESP"
 			echo "Please create the EFI/Linux directory on the EFI System partition manually"
 		fi
