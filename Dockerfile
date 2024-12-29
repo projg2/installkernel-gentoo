@@ -1,4 +1,4 @@
-FROM gentoo/stage3:amd64-systemd-mergedusr
+FROM gentoo/stage3:amd64-systemd
 
 RUN wget --progress=dot:mega -O - https://github.com/gentoo-mirror/gentoo/archive/master.tar.gz | tar -xz \
  && mv gentoo-master /var/db/repos/gentoo
