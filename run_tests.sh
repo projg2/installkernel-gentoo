@@ -12,7 +12,7 @@ INST_KV_FULL="${INST_KERN#/boot/kernel-}"
 INST_KV="${INST_KV_FULL%-gentoo-dist}"
 
 # Create a fake ESP
-dd if=/dev/zero of=/fake-efi bs=1024 count=102400 || exit 1
+dd if=/dev/zero of=/fake-efi bs=1024 count=204800 || exit 1
 FAKE_EFI="$(losetup -f)"
 losetup "${FAKE_EFI}" /fake-efi || exit 1
 mkfs.vfat -F 32 "${FAKE_EFI}" || exit 1
