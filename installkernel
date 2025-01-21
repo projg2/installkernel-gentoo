@@ -108,7 +108,7 @@ updatever() {
 
 cleanup() {
 	# shellcheck disable=SC2317
-    if [ -n "${INSTALLKERNEL_STAGING_AREA}" ]; then
+	if [ -n "${INSTALLKERNEL_STAGING_AREA}" ]; then
 		rm -rf "${INSTALLKERNEL_STAGING_AREA}"
 	fi
 }
