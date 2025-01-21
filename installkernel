@@ -108,7 +108,9 @@ updatever() {
 
 cleanup() {
 	# shellcheck disable=SC2317
-    [ -n "${INSTALLKERNEL_STAGING_AREA}" ] && rm -rf "${INSTALLKERNEL_STAGING_AREA}"
+    if [ -n "${INSTALLKERNEL_STAGING_AREA}" ]; then
+		rm -rf "${INSTALLKERNEL_STAGING_AREA}"
+	fi
 }
 
 trap cleanup EXIT
@@ -205,8 +207,12 @@ uki=${INSTALLKERNEL_STAGING_AREA}/uki.efi
 
 # Copy kernel and prebuilt initrd, uki.efi at kernel location
 cp "${img}" "${kernel}"
-[ -f "${prebuilt_initrd}" ] && cp "${prebuilt_initrd}" "${initrd}"
-[ -f "${prebuilt_uki}" ] && cp "${prebuilt_uki}" "${uki}"
+if [ -f "${prebuilt_initrd}" ]; then
+	cp "${prebuilt_initrd}" "${initrd}"
+fi
+if [ -f "${prebuilt_uki}" ]; then
+	cp "${prebuilt_uki}" "${uki}"
+fi
 
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
