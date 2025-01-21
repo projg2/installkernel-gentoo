@@ -141,9 +141,12 @@ if [ -f "${install_conf}" ]; then
 	fi
 fi
 
+INSTALLKERNEL_STAGING_AREA="$(mktemp -d -t installkernel.staging.XXXXXXX)"
+
 export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
 export INSTALLKERNEL_UKI_GENERATOR
+export INSTALLKERNEL_STAGING_AREA
 
 if [ -f /etc/os-release ]; then
 	# shellcheck source=/dev/null
@@ -185,6 +188,19 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 	fi
 fi
 
+base_dir=$(dirname "${img}")
+prebuilt_initrd=${base_dir}/initrd
+prebuilt_uki=${base_dir}/uki.efi
+
+kernel=${INSTALLKERNEL_STAGING_AREA}/kernel
+initrd=${INSTALLKERNEL_STAGING_AREA}/initrd
+uki=${INSTALLKERNEL_STAGING_AREA}/uki.efi
+
+# Copy kernel and prebuilt initrd, uki.efi at kernel location
+cp "${img}" "${kernel}"
+[ -f "${prebuilt_initrd}" ] && cp "${prebuilt_initrd}" "${initrd}"
+[ -f "${prebuilt_uki}" ] && cp "${prebuilt_uki}" "${uki}"
+
 # If installing in the usual directory, run the same scripts that hook
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
@@ -203,9 +219,9 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 
 		for plugin in ${INSTALLKERNEL_PREINST_PLUGINS}; do
 			echo ""
-			echo "Running ${plugin} ${ver} ${img}..."
+			echo "Running ${plugin} ${ver} ${kernel}..."
 			echo ""
-			"${plugin}" "${ver}" "${img}"
+			"${plugin}" "${ver}" "${kernel}"
 			echo ""
 			echo "Hook ${plugin} finished successfully"
 			echo ""
@@ -217,13 +233,7 @@ else
 	echo "WARNING: All pre-installation hooks are ignored."
 fi
 
-# use the same input path as /usr/lib/kernel/install.d/50-dracut.install
-# and the same output path as dracut and genkernel-4 for best interop
-base_dir=$(dirname "${img}")
-initrd=${base_dir}/initrd
-uki=${base_dir}/uki.efi
-
-if [ "${img%vmlinux*}" != "${img}" ]; then
+if [ "${kernel%vmlinux*}" != "${kernel}" ]; then
 	img_dest=vmlinux
 else
 	img_dest=vmlinuz
@@ -252,7 +262,7 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 	updatever "${img_dest}" "${uki}" "${suffix}"
 else
 	echo "Installing kernel image for ${ver}..."
-	updatever "${img_dest}" "${img}" "${suffix}"
+	updatever "${img_dest}" "${kernel}" "${suffix}"
 	if [ -f "${initrd}" ]; then
 		echo "Installing initramfs image for ${ver}..."
 		updatever initramfs "${initrd}" .img

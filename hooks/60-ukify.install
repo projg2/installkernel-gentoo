@@ -8,7 +8,6 @@
 
 ver=${1}
 img=${2}
-basedir=$(dirname "${img}")
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
@@ -64,14 +63,14 @@ main() {
 		build
 		--linux="${img}"
 		--uname="${ver}"
-		--output="${basedir}/uki.efi"
+		--output="${INSTALLKERNEL_STAGING_AREA}/uki.efi"
 	)
 
 	for cpu in intel amd; do
 		[[ -f "/boot/${cpu}-uc.img" ]] && ukify_gen_args+=(--initrd="/boot/${cpu}-uc.img")
 	done
 
-	initrd="${basedir}/initrd"
+	initrd="${INSTALLKERNEL_STAGING_AREA}/initrd"
 	[[ -f ${initrd} ]] && ukify_gen_args+=(--initrd="${initrd}")
 
 	# Use the same files as systemd's 60-ukify.install
