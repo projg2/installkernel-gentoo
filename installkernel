@@ -108,7 +108,7 @@ updatever() {
 
 cleanup() {
 	# shellcheck disable=SC2317
-    [ -n "${KERNEL_INSTALL_STAGING_AREA}" ] && rm -rf "${KERNEL_INSTALL_STAGING_AREA}"
+    [ -n "${INSTALLKERNEL_STAGING_AREA}" ] && rm -rf "${INSTALLKERNEL_STAGING_AREA}"
 }
 
 trap cleanup EXIT
