@@ -106,6 +106,14 @@ updatever() {
 	fi
 }
 
+cleanup() {
+    [ -n "${KERNEL_INSTALL_STAGING_AREA}" ] && rm -rf "${KERNEL_INSTALL_STAGING_AREA}"
+}
+
+trap cleanup EXIT
+
+INSTALLKERNEL_STAGING_AREA="$(mktemp -d -t installkernel.staging.XXXXXXX)"
+
 if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
 	install_conf="${INSTALLKERNEL_CONF_ROOT}/install.conf"
 elif [ -f "/etc/kernel/install.conf" ]; then
@@ -140,8 +148,6 @@ if [ -f "${install_conf}" ]; then
 		fi
 	fi
 fi
-
-INSTALLKERNEL_STAGING_AREA="$(mktemp -d -t installkernel.staging.XXXXXXX)"
 
 export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
@@ -233,7 +239,7 @@ else
 	echo "WARNING: All pre-installation hooks are ignored."
 fi
 
-if [ "${kernel%vmlinux*}" != "${kernel}" ]; then
+if [ "${img%vmlinux*}" != "${img}" ]; then
 	img_dest=vmlinux
 else
 	img_dest=vmlinuz
