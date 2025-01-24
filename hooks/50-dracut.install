@@ -43,6 +43,7 @@ main() {
 	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
 
 	initramfs_gen_args=(
+		--add-confdir hostonly
 		--verbose
 		# if uefi=yes is used, dracut needs to locate the kernel image
 		--kernel-image "${img}"
