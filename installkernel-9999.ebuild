@@ -46,7 +46,7 @@ REQUIRED_USE="
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	dracut? (
-		>=sys-kernel/dracut-060_pre20240104-r4
+		>=sys-kernel/dracut-103
 		uki? (
 			|| (
 				sys-apps/systemd[boot(-)]
@@ -55,7 +55,7 @@ RDEPEND="
 		)
 	)
 	efistub? (
-		systemd? ( >=app-emulation/virt-firmware-24.2_p20240315-r2 )
+		systemd? ( >=app-emulation/virt-firmware-24.7 )
 		!systemd? ( sys-boot/uefi-mkconfig )
 	)
 	grub? ( sys-boot/grub )
@@ -78,7 +78,7 @@ RDEPEND="
 			sys-apps/systemd-utils[boot(-),ukify(-)]
 		)
 	)
-	ugrd? ( sys-kernel/ugrd )
+	ugrd? ( >=sys-kernel/ugrd-1.31.2 )
 	!=sys-apps/systemd-255.2-r1
 	!=sys-apps/systemd-255.2-r0
 	!~sys-apps/systemd-255.1
