@@ -218,6 +218,7 @@ fi
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+	err=0
 	(
 		#shellcheck disable=SC2030
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
@@ -234,12 +235,14 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 			echo "Running ${plugin} ${ver} ${kernel}..."
 			echo ""
-			"${plugin}" "${ver}" "${kernel}"
+			"${plugin}" "${ver}" "${kernel}" || exit ${?}
 			echo ""
 			echo "Hook ${plugin} finished successfully"
 			echo ""
 		done
-	)
+	) || err=${?}
+	[ ${err} -eq 77 ] && exit 0
+	[ ${err} -ne 0 ] && exit ${err}
 else
 	echo "WARNING: A custom installation directory is specified as fourth argument."
 	echo "WARNING: In this configuration running installation hooks is not supported."
@@ -296,6 +299,7 @@ fi
 # into kernel package installation.  Also make sure the PATH includes
 # /usr/sbin and /sbin, just as dpkg would.
 if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+	err=0
 	(
 		#shellcheck disable=SC2031
 		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
@@ -312,12 +316,14 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 			echo ""
 			echo "Running ${plugin} ${ver} ${dir}/${img_dest}-${ver}${suffix}..."
 			echo ""
-			"${plugin}" "${ver}" "${dir}/${img_dest}-${ver}${suffix}"
+			"${plugin}" "${ver}" "${dir}/${img_dest}-${ver}${suffix}" || exit ${?}
 			echo ""
 			echo "Hook ${plugin} finished successfully"
 			echo ""
 		done
-	)
+	) || err=${?}
+	[ ${err} -eq 77 ] && exit 0
+	[ ${err} -ne 0 ] && exit ${err}
 else
 	echo "WARNING: A custom installation directory is specified as fourth argument."
 	echo "WARNING: In this configuration running installation hooks is not supported."
