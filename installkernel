@@ -201,12 +201,10 @@ base_dir=$(dirname "${img}")
 prebuilt_initrd=${base_dir}/initrd
 prebuilt_uki=${base_dir}/uki.efi
 
-kernel=${INSTALLKERNEL_STAGING_AREA}/kernel
 initrd=${INSTALLKERNEL_STAGING_AREA}/initrd
 uki=${INSTALLKERNEL_STAGING_AREA}/uki.efi
 
-# Copy kernel and prebuilt initrd, uki.efi at kernel location
-cp "${img}" "${kernel}"
+# Copy prebuilt initrd, uki.efi at kernel location
 if [ -f "${prebuilt_initrd}" ]; then
 	cp "${prebuilt_initrd}" "${initrd}"
 fi
@@ -233,9 +231,9 @@ if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
 
 		for plugin in ${INSTALLKERNEL_PREINST_PLUGINS}; do
 			echo ""
-			echo "Running ${plugin} ${ver} ${kernel}..."
+			echo "Running ${plugin} ${ver} ${img}..."
 			echo ""
-			"${plugin}" "${ver}" "${kernel}" || exit ${?}
+			"${plugin}" "${ver}" "${img}" || exit ${?}
 			echo ""
 			echo "Hook ${plugin} finished successfully"
 			echo ""
@@ -278,7 +276,7 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 	updatever "${img_dest}" "${uki}" "${suffix}"
 else
 	echo "Installing kernel image for ${ver}..."
-	updatever "${img_dest}" "${kernel}" "${suffix}"
+	updatever "${img_dest}" "${img}" "${suffix}"
 	if [ -f "${initrd}" ]; then
 		echo "Installing initramfs image for ${ver}..."
 		updatever initramfs "${initrd}" .img
