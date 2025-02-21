@@ -176,7 +176,7 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 		# Relocate to ESP
 		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
 			if [ -d "${candidate}/EFI/${NAME}" ]; then
-				echo "Found vendor directory on ESP"
+				echo "Found vendor directory on ESP ${candidate}"
 				dir=${candidate}/EFI/${NAME}
 				suffix=.efi
 				# backwards compatibility
@@ -190,7 +190,30 @@ if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
 				continue
 			fi
 		done
+
 		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
+			# No vendor dir found, try to create one
+			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
+				if [ -d "${candidate}/EFI" ]; then
+					echo "Creating vendor directory on ESP ${candidate}"
+					mkdir -p "${candidate}/EFI/${NAME}"
+					dir=${candidate}/EFI/${NAME}
+					suffix=.efi
+					# backwards compatibility
+					if [ -f "/boot/intel-uc.img" ]; then
+						cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
+					fi
+					if [ -f "/boot/amd-uc.img" ]; then
+						cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
+					fi
+				else
+					continue
+				fi
+			done
+		fi
+
+		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
+			# Still no vendor dir, warn and fallback
 			echo "layout=efistub set, but did not find vendor directory on ESP"
 			echo "Please create the EFI/${NAME} directory on the EFI System partition manually"
 		fi
@@ -267,7 +290,23 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 				continue
 			fi
 		done
+
 		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
+			# No UKI dir found, try to create one
+			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
+				if [ -d "${candidate}/EFI" ]; then
+					echo "Creating UKI directory on ESP ${candidate}"
+					mkdir -p "${candidate}/EFI/Linux"
+					dir=${candidate}/EFI/Linux
+					img_dest=${ID}
+				else
+					continue
+				fi
+			done
+		fi
+
+		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
+			# Still no UKI dir, warn and fallback
 			echo "layout=uki set, but did not find the UKI directory on ESP"
 			echo "Please create the EFI/Linux directory on the EFI System partition manually"
 		fi
