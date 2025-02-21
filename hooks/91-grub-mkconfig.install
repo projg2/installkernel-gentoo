@@ -40,12 +40,23 @@ main() {
 		cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
 	fi
 
+	if [[ -f /etc/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /etc/os-release
+	elif [[ -f /usr/lib/os-release ]]; then
+		# shellcheck source=/dev/null
+		. /usr/lib/os-release
+	fi
+
+	# Set sane default if no or broken os-release
+	: "${NAME:=Linux}"
+
 	# The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
 	# with BLS type 2 locations where we may install an UKI
 	: "${GRUB_LINUX_KERNEL_GLOBS:="
 		/boot/vmlinuz-* /boot/vmlinux-* /boot/kernel-* /vmlinuz-* /vmlinux-*
-		/boot/EFI/EFI/Linux/*.efi /boot/efi/EFI/Linux/*.efi
-		/boot/EFI/Linux/*.efi /efi/EFI/Linux/*.efi
+		/kernel-* /boot/EFI/EFI/${NAME}/*.efi /boot/efi/EFI/${NAME}/*.efi
+		/boot/EFI/${NAME}/*.efi /efi/EFI/${NAME}/*.efi
 	"}"
 	export GRUB_LINUX_KERNEL_GLOBS
 
