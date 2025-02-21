@@ -29,17 +29,28 @@ KERNEL_INSTALL_BOOT_ROOT="/boot"
 
 : "${GRUB_CFG:=${KERNEL_INSTALL_BOOT_ROOT}/grub/grub.cfg}"
 
+if [[ -f /etc/os-release ]]; then
+	# shellcheck source=/dev/null
+	. /etc/os-release
+elif [[ -f /usr/lib/os-release ]]; then
+	# shellcheck source=/dev/null
+	. /usr/lib/os-release
+fi
+
+# Set sane default if no or broken os-release
+: "${NAME:=Linux}"
+
 # The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
 # with BLS type 2 locations where we may install an UKI
 : "${GRUB_LINUX_KERNEL_GLOBS:="
-	/vmlinuz-* /vmlinux-*
-	/efi/EFI/Linux/*.efi
+	/vmlinuz-* /vmlinux-* /kernel-*
+	/efi/EFI/${NAME}/*.efi
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-*
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-*
 	${KERNEL_INSTALL_BOOT_ROOT}/kernel-*
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/Linux/*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/Linux/*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/Linux/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/${NAME}/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/${NAME}/*.efi
 "}"
 export GRUB_LINUX_KERNEL_GLOBS
 
