@@ -32,7 +32,7 @@ if [[ ! -f ${REFIND_ICON} ]]; then
 fi
 
 # Refind does not discover kernels in the bls layout
-if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" ]]; then
+if [[ ${KERNEL_INSTALL_LAYOUT} == "compat" || ${KERNEL_INSTALL_LAYOUT} == "grub" ]]; then
 	KERNEL_INSTALL_BOOT_ROOT="/boot"
 	if [[ ${COMMAND} == add ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Copying rEFInd icon file..."
