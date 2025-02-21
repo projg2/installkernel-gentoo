@@ -283,7 +283,7 @@ if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
 		# Relocate to ESP
 		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
 			if [ -d "${candidate}/EFI/Linux" ]; then
-				echo "Found UKI directory on ESP"
+				echo "Found UKI directory on ESP ${candidate}"
 				dir=${candidate}/EFI/Linux
 				img_dest=${ID}
 			else
