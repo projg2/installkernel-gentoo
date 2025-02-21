@@ -19,19 +19,10 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
 IUSE="dracut efistub grub refind systemd systemd-boot ugrd uki ukify"
 REQUIRED_USE="
-	?? ( efistub grub systemd-boot )
-	refind? ( !systemd-boot !grub )
 	systemd-boot? ( systemd )
 	ukify? ( uki )
 	?? ( dracut ugrd )
 "
-# Only select one flag that sets "layout=", except for uki since grub,
-# systemd-boot, and efistub booting are all compatible with UKIs and
-# the uki layout.
-#
-# Refind does not set a layout=, it is compatible with the compat, uki
-# and efistub layout. So block against only grub and systemd-boot.
-#
 # systemd-boot could be made to work without the systemd flag, but this
 # makes no sense since in systemd(-utils) the boot flag already
 # requires the kernel-install flag.
@@ -122,6 +113,11 @@ src_install() {
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use refind && doexe hooks/systemd/95-refind-copy-icon.install
+
+	if use grub && use uki; then
+		exeinto /etc/grub.d
+		doexe grub/05_uki
+	fi
 
 	if use systemd; then
 		sed -e 's/${SYSTEMD_KERNEL_INSTALL:=0}/${SYSTEMD_KERNEL_INSTALL:=1}/g' -i installkernel ||
