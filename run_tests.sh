@@ -416,7 +416,7 @@ FAILURES=()
 
 for case in "${!TEST_CASES[@]}"; do
 	rm -rf /boot/* /efi/* || { echo "Error at case USE=\"${case}\"" && exit 1; }
-	mkdir -p /efi/EFI/Linux || { echo "Error at case USE=\"${case}\"" && exit 1; }
+	mkdir -p /efi/EFI || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	echo "Testing case USE=\"${case}\" ..."
 
 	emerge --rage-clean --quiet --quiet-unmerge-warn sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
