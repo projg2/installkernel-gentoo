@@ -52,11 +52,15 @@ main() {
 	: "${NAME:=Linux}"
 
 	# The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
-	# with BLS type 2 locations where we may install an UKI
+	# with efistub dir
 	: "${GRUB_LINUX_KERNEL_GLOBS:="
-		/boot/vmlinuz-* /boot/vmlinux-* /boot/kernel-* /vmlinuz-* /vmlinux-*
-		/kernel-* /boot/EFI/EFI/${NAME}/*.efi /boot/efi/EFI/${NAME}/*.efi
-		/boot/EFI/${NAME}/*.efi /efi/EFI/${NAME}/*.efi
+		/boot/vmlinuz-* /boot/vmlinux-* /boot/kernel-* /vmlinuz-* /vmlinux-* /kernel-*
+		/boot/EFI/EFI/${NAME}/vmlinuz-*.efi /boot/EFI/EFI/${NAME}/vmlinux-*.efi
+		/boot/EFI/EFI/${NAME}/kernel-*.efi /boot/efi/EFI/${NAME}/vmlinuz-*.efi
+		/boot/efi/EFI/${NAME}/vmlinux-*.efi /boot/efi/EFI/${NAME}/kernel-*.efi
+		/boot/EFI/${NAME}/vmlinuz-*.efi /boot/EFI/${NAME}/vmlinux-*.efi
+		/boot/EFI/${NAME}/kernel-*.efi /efi/EFI/${NAME}/vmlinuz-*.efi
+		/efi/EFI/${NAME}/vmlinux-*.efi /efi/EFI/${NAME}/kernel-*.efi
 	"}"
 	export GRUB_LINUX_KERNEL_GLOBS
 

@@ -41,16 +41,24 @@ fi
 : "${NAME:=Linux}"
 
 # The default GRUB_LINUX_KERNEL_GLOBS from /etc/grub/10_linux expanded
-# with BLS type 2 locations where we may install an UKI
+# with efistub dir
 : "${GRUB_LINUX_KERNEL_GLOBS:="
 	/vmlinuz-* /vmlinux-* /kernel-*
-	/efi/EFI/${NAME}/*.efi
+	/efi/EFI/${NAME}/vmlinuz-*.efi
+	/efi/EFI/${NAME}/vmlinux-*.efi
+	/efi/EFI/${NAME}/kernel-*.efi
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinuz-*
 	${KERNEL_INSTALL_BOOT_ROOT}/vmlinux-*
 	${KERNEL_INSTALL_BOOT_ROOT}/kernel-*
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/${NAME}/*.efi
-	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/${NAME}/*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/vmlinuz-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/vmlinux-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/${NAME}/kernel-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/${NAME}/vmlinuz-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/${NAME}/vmlinux-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/EFI/EFI/${NAME}/kernel-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/${NAME}/vmlinuz-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/${NAME}/vmlinux-*.efi
+	${KERNEL_INSTALL_BOOT_ROOT}/efi/EFI/${NAME}/kernel-*.efi
 "}"
 export GRUB_LINUX_KERNEL_GLOBS
 
