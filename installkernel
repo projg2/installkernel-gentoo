@@ -121,6 +121,10 @@ if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
 	install_conf="${INSTALLKERNEL_CONF_ROOT}/install.conf"
 elif [ -f "/etc/kernel/install.conf" ]; then
 	install_conf="/etc/kernel/install.conf"
+elif [ -f "/run/kernel/install.conf" ]; then
+	install_conf="/run/kernel/install.conf"
+elif [ -f "/usr/local/lib/kernel/install.conf" ]; then
+	install_conf="/usr/local/lib/kernel/install.conf"
 elif [ -f "/usr/lib/kernel/install.conf" ]; then
 	install_conf="/usr/lib/kernel/install.conf"
 else
