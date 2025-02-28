@@ -20,7 +20,7 @@ die() {
 }
 
 einfo() {
-	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] || return
+	[[ ${INSTALLKERNEL_VERBOSE} == 1 ]] || return 0
 	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}"
 }
 
@@ -50,7 +50,7 @@ main() {
 		--kernel-image "${img}"
 	)
 
-	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && initramfs_gen_args+=( --verbose )
+	[[ ${INSTALLKERNEL_VERBOSE} == 1 ]] && initramfs_gen_args+=( --verbose )
 
 	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
 		einfo "Using dracut as the initramfs and UKI generator..."
