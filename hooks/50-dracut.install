@@ -19,6 +19,7 @@ die() {
 }
 
 einfo() {
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] || return
 	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}"
 }
 
@@ -44,10 +45,11 @@ main() {
 
 	initramfs_gen_args=(
 		--add-confdir hostonly
-		--verbose
 		# if uefi=yes is used, dracut needs to locate the kernel image
 		--kernel-image "${img}"
 	)
+
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && initramfs_gen_args+=( --verbose )
 
 	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
 		einfo "Using dracut as the initramfs and UKI generator..."

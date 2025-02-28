@@ -23,6 +23,7 @@ die() {
 }
 
 einfo() {
+	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] || return
 	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}"
 }
 
