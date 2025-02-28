@@ -10,8 +10,8 @@
 ver=${1}
 img=${2}
 basedir=$(dirname "${img}")
-initrd=${basedir}/initrd
-uki=${basedir}/uki.efi
+initrd=${INSTALLKERNEL_STAGING_AREA:-${basedir}}/initrd
+uki=${INSTALLKERNEL_STAGING_AREA:-${basedir}}/uki.efi
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
