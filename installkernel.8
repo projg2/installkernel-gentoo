@@ -2,7 +2,7 @@
 .SH NAME
 installkernel \- install a new kernel image
 .SH SYNOPSIS
-.BI "installkernel " "version zImage System.map [directory]"
+.BI "installkernel " "version kernel System.map [directory] [--verbose] [--all] [--systemd|--no-systemd]"
 .SH DESCRIPTION
 .PP
 .B installkernel
@@ -29,6 +29,8 @@ If the directory containing
 .I System.map
 contains
 .I .config
+or
+.I config
 file, it is also installed.  If the directory containing the kernel image
 contains an
 .I initrd
@@ -39,17 +41,52 @@ Kernel installs are logged to
 in a tab separated file containing the columns:
 DATE, KI_VENDOR, VERSION, CONF_ROOT, LAYOUT, INITRD_GEN, UKI_GEN, BOOT_ROOT, KERNEL_REL_PATH, INITRD_REL_PATH and PLUGIN_OVERRIDE.
 .P
+When the
+.I version,
+.I kernel,
+and/or
+.I System.map
+positional arguments are not
+given then these values default to the currently running kernel. Meaning
+that version defaults to the value of
+.I uname -r
+and the kernel image defaults to
+.I /lib/modules/$(uname -r)/vmlinuz
+and the System.map defaults to
+.I /lib/modules/$(uname -r)/System.map.
+The fourth positional argument for the installation directory defaults to
+.I /boot.
+.P
 If systemd's kernel-install is present on the system and the environment
 variable
 .B SYSTEMD_KERNEL_INSTALL
-is set to 1, then it is called to install the kernel. The default setting
-for this environment variable is controlled by the installkernel ebuild. When
-kernel installation is delegated to systemd's kernel-install this manual is not
+is set to 1 or the --systemd argument is given, then kernel-install is called
+to install the kernel instead of this script. Any extra arguments given to
+installkernel are passed on to kernel-install. The default setting for this
+environment variable is controlled by the installkernel ebuild. When kernel
+installation is delegated to systemd's kernel-install this manual is not
 applicable. See the kernel-install manual for more information. Systemd's
 kernel-install supports various different layouts, the default "compat" layout
 is similar, but not identical, to the layout used by this installkernel. The
 locations of plugin scripts, as well as recognized environment variables, are
 also different.
+.P
+The
+.I --all
+argument may be used to iteratively install all kernel versions found
+under
+.I /lib/modules.
+When
+.I --all
+is combined with
+.I --systemd
+then systemd's kernel-install is called with the
+.I add-all
+operator instead of the
+.I
+add
+operator.
+
 .SH BUGS
 installkernel resides in /sbin only because the Linux kernel makefiles
 call it from there.  It should really be in /usr/sbin.  It isn't
@@ -83,11 +120,12 @@ initrd_generator
 .IP \(bu (bullet)
 uki_generator
 .RE
-are read from
-.IR /usr/lib/kernel/install.conf
-and/or
+are read from one of these locations
 .IR /etc/kernel/install.conf
-, where the latter takes precedence over the former. And exposed to the plugins
+.IR /run/kernel/install.conf
+.IR /usr/local/lib/kernel/install.conf
+.IR /usr/lib/kernel/install.conf
+, where the first available file is used. And exposed to the plugins
 as:
 .RS
 .IP \(bu (bullet)
