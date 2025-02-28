@@ -13,7 +13,7 @@
 # /sbin/installkernel. It is also called by kernel-install.eclass.
 
 : "${SYSTEMD_KERNEL_INSTALL:=0}"
-: "${INSTALLKERNEL_VERBOSE:=0}"
+: "${INSTALLKERNEL_VERBOSE:=1}"
 _ik_install_all=0
 _ik_remaining_optargs=
 _ik_arg_index=0
@@ -293,9 +293,9 @@ main() {
 				fi
 				"${plugin}" "${ver}" "${img}" || exit ${?}
 				if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-					echo ""
+					echo
 					echo "Hook ${plugin} finished successfully"
-					echo ""
+					echo
 				fi
 			done
 		) || err=${?}
