@@ -13,7 +13,7 @@
 # /sbin/installkernel. It is also called by kernel-install.eclass.
 
 : "${SYSTEMD_KERNEL_INSTALL:=0}"
-: "${INSTALLKERNEL_VERBOSE:=1}"
+: "${INSTALLKERNEL_VERBOSE:=0}"
 _ik_install_all=0
 _ik_remaining_optargs=
 _ik_arg_index=0
@@ -203,8 +203,9 @@ main() {
 			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
 			do
 				if [ -d "${candidate}/EFI/${NAME}" ]; then
-					[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+					if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 						echo "Found vendor directory on ESP ${candidate}"
+					fi
 					dir=${candidate}/EFI/${NAME}
 					suffix=.efi
 					# backwards compatibility
@@ -225,8 +226,9 @@ main() {
 				for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
 				do
 					if [ -d "${candidate}/EFI" ]; then
-						[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+						if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 							echo "Creating vendor directory on ESP ${candidate}"
+						fi
 						mkdir -p "${candidate}/EFI/${NAME}"
 						dir=${candidate}/EFI/${NAME}
 						suffix=.efi
@@ -322,8 +324,9 @@ main() {
 			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
 			do
 				if [ -d "${candidate}/EFI/Linux" ]; then
-					[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+					if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 						echo "Found UKI directory on ESP ${candidate}"
+					fi
 					dir=${candidate}/EFI/Linux
 					img_dest=${ID}
 				else
@@ -337,8 +340,9 @@ main() {
 				for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
 				do
 					if [ -d "${candidate}/EFI" ]; then
-						[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+						if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 							echo "Creating UKI directory on ESP ${candidate}"
+						fi
 						mkdir -p "${candidate}/EFI/Linux"
 						dir=${candidate}/EFI/Linux
 						img_dest=${ID}
@@ -355,31 +359,37 @@ main() {
 				echo "WARNING: Please create the EFI/Linux directory on the EFI System partition manually"
 			fi
 		fi
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "Installing Unified Kernel Image for ${ver}..."
+		fi
 		updatever "${img_dest}" "${uki}" "${suffix}"
 	else
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "Installing kernel image for ${ver}..."
+		fi
 		updatever "${img_dest}" "${img}" "${suffix}"
 		if [ -f "${initrd}" ]; then
-			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 				echo "Installing initramfs image for ${ver}..."
+			fi
 			updatever initramfs "${initrd}" .img
 		fi
 
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "Installing System.map for ${ver}..."
+		fi
 		updatever System.map "${map}"
 
 		basedir=$(dirname "${map}")
 		if [ -f "${basedir}/.config" ]; then
-			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 				echo "Installing config for ${ver}..."
+			fi
 			updatever config "${basedir}/.config"
 		elif [ -f "${basedir}/config" ]; then
-			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 				echo "Installing config for ${ver}..."
+			fi
 			updatever config "${basedir}/config"
 		fi
 	fi
@@ -443,27 +453,32 @@ else
 fi
 
 if [ -f "${install_conf}" ]; then
-	[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] && echo "Reading ${install_conf}..."
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "Reading ${install_conf}..."
+	fi
 	# shellcheck source=/dev/null
 	. "${install_conf}"
 
 	if [ -n "${layout}" ]; then
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "${install_conf} configures layout=${layout}"
+		fi
 		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
 			INSTALLKERNEL_LAYOUT="${layout}"
 		fi
 	fi
 	if [ -n "${initrd_generator}" ]; then
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "${install_conf} configures initrd_generator=${initrd_generator}"
+		fi
 		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
 			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
 		fi
 	fi
 	if [ -n "${uki_generator}" ]; then
-		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
 			echo "${install_conf} configures uki_generator=${uki_generator}"
+		fi
 		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
 			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
 		fi
@@ -497,13 +512,19 @@ if [ ${_ik_install_all} -eq 1 ]; then
 		if [ -f "${img}" ] && [ -f "${map}" ]; then
 			main "${ver}" "${img}" "${map}" "${_ik_arg_4}"
 		else
-			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
-				echo "WARNING: skipping ${ver}, no kernel image available"
+			if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+				echo "WARNING: Skipping ${ver}, no kernel image or system map available."
+			fi
 			continue
 		fi
 	done
 else
-	main "${_ik_arg_1}" "${_ik_arg_2}" "${_ik_arg_3}" "${_ik_arg_4}"
+	if [ -f "${_ik_arg_2}" ] && [ -f "${_ik_arg_3}" ]; then
+		main "${_ik_arg_1}" "${_ik_arg_2}" "${_ik_arg_3}" "${_ik_arg_4}"
+	else
+		echo "ERROR: No such kernel image or system map."
+		exit 1
+	fi
 fi
 
 exit 0
