@@ -12,16 +12,100 @@
 # This script is called by the kernel's "make install" if it is installed as
 # /sbin/installkernel. It is also called by kernel-install.eclass.
 
-SYSTEMD_KERNEL_INSTALL="${SYSTEMD_KERNEL_INSTALL:=0}"
+: "${SYSTEMD_KERNEL_INSTALL:=0}"
+: "${INSTALLKERNEL_VERBOSE:=0}"
+_ik_install_all=0
+_ik_remaining_optargs=
+_ik_arg_index=0
+# Use same defaults as systemd's kernel-install
+_ik_arg_1="$(uname -r)"
+_ik_arg_2=/lib/modules/${_ik_arg_1}/vmlinuz
+_ik_arg_3=/lib/modules/${_ik_arg_1}/System.map
+_ik_arg_4=/boot
+# Of course, powerpc has to be all different, and passes in a fifth
+# argument, just because it is "special". We ignore the fifth argument,
+# and do not flag is as an error, which it would be for any arch apart
+# from powerpc
+_ik_arg_5=
 
-if [ "${SYSTEMD_KERNEL_INSTALL}" = "1" ] && command -v kernel-install >/dev/null; then
+while [ ${#} -gt 0 ]; do
+	case "${1}" in
+		--help|-h)
+			echo "Gentoo's helper utility to install new kernel versions"
+			echo
+			echo "Usage: installkernel <version> <image> <System.map> <directory>"
+			echo
+			echo "Optional arguments:"
+			echo "	-h, --help: display this help text"
+			echo "	-v, --verbose: run in verbose mode and export \$INSTALLKERNEL_VERBOSE"
+			echo "	-a, --all: iteratively install all versions available in /lib/modules/"
+			echo "	--systemd, --no-systemd: offload installation to systemd's kernel-install"
+			echo
+			echo "Other optional arguments are passed on to systemd's kernel-install if this is enabled"
+			echo "via the --systemd argument. The default value for --systemd|--no-systemd is controlled"
+			echo "by the value of the \"systemd\" USE flag on the sys-kernel/installkernel package."
+			if command -v kernel-install >/dev/null; then
+				echo
+				kernel-install --help
+			fi
+			echo
+			echo "See the installkernel(8) man page for details."
+			exit 0
+		;;
+		--verbose|-v)
+			INSTALLKERNEL_VERBOSE=1
+			_ik_remaining_optargs="${_ik_remaining_optargs} ${1}"
+		;;
+		--all|-a)
+			_ik_install_all=1
+		;;
+		--systemd)
+			SYSTEMD_KERNEL_INSTALL=1
+		;;
+		--no-systemd)
+			SYSTEMD_KERNEL_INSTALL=0
+		;;
+		-*)
+			_ik_remaining_optargs="${_ik_remaining_optargs} ${1}"
+		;;
+		*)
+			_ik_arg_index=$((_ik_arg_index+1))
+			if [ ${_ik_arg_index} -eq 1 ]; then
+				_ik_arg_1=${1}
+			elif [ ${_ik_arg_index} -eq 2 ]; then
+				_ik_arg_2=${1}
+			elif [ ${_ik_arg_index} -eq 3 ]; then
+				_ik_arg_3=${1}
+			elif [ ${_ik_arg_index} -eq 4 ]; then
+				_ik_arg_4=${1}
+			elif [ ${_ik_arg_index} -eq 5 ]; then
+				_ik_arg_5=${1}
+			else
+				echo "Too many arguments."
+				echo "Usage: installkernel <version> <image> <System.map> <directory>"
+				echo "	[--verbose] [--all] [--systemd|--no-systemd] [--help]"
+				exit 1
+			fi
+		;;
+	esac
+	shift
+done
+
+if [ "${SYSTEMD_KERNEL_INSTALL}" -eq 1 ] && command -v kernel-install >/dev/null
+then
 	# If the ${0} of kernel-install is installkernel it takes its arguments
 	# in the same way we do here. We could use "exec -a ${0} .. ${@}" for this,
 	# but the -a argument is not POSIX, only bash.
 	# TODO: maybe revisit this if we ever bashify the script.
-	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
+	if [ ${_ik_arg_index} -le 3 ] || [ "${_ik_arg_4}" = "/boot" ]; then
 		# kernel-install does not support relocation (ignores $4, see manual)
-		exec kernel-install add --verbose "${1}" "${2}"
+		if [ ${_ik_install_all} -eq 1 ]; then
+			# shellcheck disable=SC2086
+			exec kernel-install add-all ${_ik_remaining_optargs}
+		else
+			# shellcheck disable=SC2086
+			exec kernel-install add ${_ik_remaining_optargs} "${_ik_arg_1}" "${_ik_arg_2}"
+		fi
 	else
 		echo "WARNING: A custom installation directory is specified as fourth argument."
 		echo "WARNING: Systemd kernel-install does not support this. Falling back"
@@ -31,24 +115,7 @@ fi
 
 set -e
 
-# Parse the command line options.  Of course, powerpc has to be all
-# different, and passes in a fifth argument, just because it is
-# "special". We ignore the fifth argument, and do not flag is as an
-# error, which it would be for any arch apart from powerpc
-if [ ${#} -eq 3 ] || [ ${#} -eq 4 ] || [ ${#} -eq 5 ]; then
-	ver="${1}"
-	img="${2}"
-	map="${3}"
-	if [ ${#} -ge 4 ] && [ -n "${4}" ]; then
-		dir="${4}"
-	else
-		dir="/boot"
-	fi
-else
-	echo "Usage: installkernel <version> <image> <System.map> <directory>"
-	exit 1
-fi
-
+# Used to find pre and post install hooks
 dropindirs_sort() {
     for d; do
         for i in "${d}/"*; do
@@ -106,50 +173,297 @@ updatever() {
 	fi
 }
 
-cleanup() {
-	# shellcheck disable=SC2317
-	if [ -n "${INSTALLKERNEL_STAGING_AREA}" ]; then
-		rm -rf "${INSTALLKERNEL_STAGING_AREA}"
+# Main installation script that we will call later
+main() {
+	ver=${1:?}
+	img=${2:?}
+	map=${3:?}
+	dir=${4:-/boot}
+	if [ ${#} -gt 4 ]; then
+		echo "Too many arguments."
+		exit 1
 	fi
+
+	cleanup() {
+		# shellcheck disable=SC2317
+		if [ -n "${INSTALLKERNEL_STAGING_AREA}" ]; then
+			rm -rf "${INSTALLKERNEL_STAGING_AREA}"
+		fi
+	}
+	trap cleanup EXIT
+
+	INSTALLKERNEL_STAGING_AREA="$(mktemp -d -t installkernel.staging.XXXXXXX)"
+	export INSTALLKERNEL_STAGING_AREA
+
+	suffix=
+	if [ "${INSTALLKERNEL_LAYOUT}" = "efistub" ]; then
+		if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]
+		then
+			# Relocate to ESP
+			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
+			do
+				if [ -d "${candidate}/EFI/${NAME}" ]; then
+					[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+						echo "Found vendor directory on ESP ${candidate}"
+					dir=${candidate}/EFI/${NAME}
+					suffix=.efi
+					# backwards compatibility
+					if [ -f "/boot/intel-uc.img" ]; then
+						cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
+					fi
+					if [ -f "/boot/amd-uc.img" ]; then
+						cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
+					fi
+				else
+					continue
+				fi
+			done
+
+			if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]
+			then
+				# No vendor dir found, try to create one
+				for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
+				do
+					if [ -d "${candidate}/EFI" ]; then
+						[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+							echo "Creating vendor directory on ESP ${candidate}"
+						mkdir -p "${candidate}/EFI/${NAME}"
+						dir=${candidate}/EFI/${NAME}
+						suffix=.efi
+						# backwards compatibility
+						if [ -f "/boot/intel-uc.img" ]; then
+							cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
+						fi
+						if [ -f "/boot/amd-uc.img" ]; then
+							cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
+						fi
+					else
+						continue
+					fi
+				done
+			fi
+
+			if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]
+			then
+				# Still no vendor dir, warn and fallback
+				echo "WARNING: layout=efistub set, but did not find vendor directory on ESP."
+				echo "WARNING: Please create the EFI/${NAME} directory on the EFI System partition manually."
+			fi
+		fi
+	fi
+
+	base_dir=$(dirname "${img}")
+	prebuilt_initrd=${base_dir}/initrd
+	prebuilt_uki=${base_dir}/uki.efi
+
+	initrd=${INSTALLKERNEL_STAGING_AREA}/initrd
+	uki=${INSTALLKERNEL_STAGING_AREA}/uki.efi
+
+	# Copy prebuilt initrd, uki.efi at kernel location
+	if [ -f "${prebuilt_initrd}" ]; then
+		cp "${prebuilt_initrd}" "${initrd}"
+	fi
+	if [ -f "${prebuilt_uki}" ]; then
+		cp "${prebuilt_uki}" "${uki}"
+	fi
+
+	# If installing in the usual directory, run the same scripts that hook
+	# into kernel package installation.  Also make sure the PATH includes
+	# /usr/sbin and /sbin, just as dpkg would.
+	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]
+	then
+		err=0
+		(
+			#shellcheck disable=SC2030
+			export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
+
+			if [ -z "${INSTALLKERNEL_PREINST_PLUGINS}" ]; then
+				INSTALLKERNEL_PREINST_PLUGINS="$(
+					dropindirs_sort \
+					"/etc/kernel/preinst.d" \
+					"/usr/lib/kernel/preinst.d"
+				)"
+			fi
+
+			for plugin in ${INSTALLKERNEL_PREINST_PLUGINS}; do
+				if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+					echo
+					echo "Running ${plugin} ${ver} ${img}..."
+					echo
+				fi
+				"${plugin}" "${ver}" "${img}" || exit ${?}
+				if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+					echo ""
+					echo "Hook ${plugin} finished successfully"
+					echo ""
+				fi
+			done
+		) || err=${?}
+		[ ${err} -eq 77 ] && exit 0
+		[ ${err} -ne 0 ] && exit ${err}
+	else
+		echo "WARNING: A custom installation directory is specified as fourth argument."
+		echo "WARNING: In this configuration running installation hooks is not supported."
+		echo "WARNING: All pre-installation hooks are ignored."
+	fi
+
+	if [ "${img%vmlinux*}" != "${img}" ]; then
+		img_dest=vmlinux
+	else
+		img_dest=vmlinuz
+	fi
+
+	# If we found a uki.efi, install it instead of kernel+initrd
+	if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = "uki" ]; then
+		suffix=.efi
+		if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]
+		then
+			# Relocate to ESP
+			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
+			do
+				if [ -d "${candidate}/EFI/Linux" ]; then
+					[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+						echo "Found UKI directory on ESP ${candidate}"
+					dir=${candidate}/EFI/Linux
+					img_dest=${ID}
+				else
+					continue
+				fi
+			done
+
+			if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]
+			then
+				# No UKI dir found, try to create one
+				for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"
+				do
+					if [ -d "${candidate}/EFI" ]; then
+						[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+							echo "Creating UKI directory on ESP ${candidate}"
+						mkdir -p "${candidate}/EFI/Linux"
+						dir=${candidate}/EFI/Linux
+						img_dest=${ID}
+					else
+						continue
+					fi
+				done
+			fi
+
+			if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]
+			then
+				# Still no UKI dir, warn and fallback
+				echo "WARNING: layout=uki set, but did not find the UKI directory on ESP"
+				echo "WARNING: Please create the EFI/Linux directory on the EFI System partition manually"
+			fi
+		fi
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "Installing Unified Kernel Image for ${ver}..."
+		updatever "${img_dest}" "${uki}" "${suffix}"
+	else
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "Installing kernel image for ${ver}..."
+		updatever "${img_dest}" "${img}" "${suffix}"
+		if [ -f "${initrd}" ]; then
+			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+				echo "Installing initramfs image for ${ver}..."
+			updatever initramfs "${initrd}" .img
+		fi
+
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "Installing System.map for ${ver}..."
+		updatever System.map "${map}"
+
+		basedir=$(dirname "${map}")
+		if [ -f "${basedir}/.config" ]; then
+			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+				echo "Installing config for ${ver}..."
+			updatever config "${basedir}/.config"
+		elif [ -f "${basedir}/config" ]; then
+			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+				echo "Installing config for ${ver}..."
+			updatever config "${basedir}/config"
+		fi
+	fi
+
+	# If installing in the usual directory, run the same scripts that hook
+	# into kernel package installation.  Also make sure the PATH includes
+	# /usr/sbin and /sbin, just as dpkg would.
+	if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]
+	then
+		err=0
+		(
+			#shellcheck disable=SC2031
+			export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
+
+			if [ -z "${INSTALLKERNEL_POSTINST_PLUGINS}" ]; then
+				INSTALLKERNEL_POSTINST_PLUGINS="$(
+					dropindirs_sort \
+					"/etc/kernel/postinst.d" \
+					"/usr/lib/kernel/postinst.d"
+				)"
+			fi
+
+			for plugin in ${INSTALLKERNEL_POSTINST_PLUGINS}; do
+				if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+					echo
+					echo "Running ${plugin} ${ver} ${dir}/${img_dest}-${ver}${suffix}..."
+					echo
+				fi
+				"${plugin}" "${ver}" "${dir}/${img_dest}-${ver}${suffix}" || exit ${?}
+				if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+					echo
+					echo "Hook ${plugin} finished successfully"
+					echo
+				fi
+			done
+		) || err=${?}
+		[ ${err} -eq 77 ] && exit 0
+		[ ${err} -ne 0 ] && exit ${err}
+	else
+		echo "WARNING: A custom installation directory is specified as fourth argument."
+		echo "WARNING: In this configuration running installation hooks is not supported."
+		echo "WARNING: All post-installation hooks are ignored."
+	fi
+
+	cleanup
 }
 
-trap cleanup EXIT
-
-INSTALLKERNEL_STAGING_AREA="$(mktemp -d -t installkernel.staging.XXXXXXX)"
-
+# Find and read the install.conf
 if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
 	install_conf="${INSTALLKERNEL_CONF_ROOT}/install.conf"
-elif [ -f "/etc/kernel/install.conf" ]; then
-	install_conf="/etc/kernel/install.conf"
-elif [ -f "/run/kernel/install.conf" ]; then
-	install_conf="/run/kernel/install.conf"
-elif [ -f "/usr/local/lib/kernel/install.conf" ]; then
-	install_conf="/usr/local/lib/kernel/install.conf"
-elif [ -f "/usr/lib/kernel/install.conf" ]; then
-	install_conf="/usr/lib/kernel/install.conf"
+elif [ -f /etc/kernel/install.conf ]; then
+	install_conf=/etc/kernel/install.conf
+elif [ -f /run/kernel/install.conf ]; then
+	install_conf=/run/kernel/install.conf
+elif [ -f /usr/local/lib/kernel/install.conf ]; then
+	install_conf=/usr/local/lib/kernel/install.conf
+elif [ -f /usr/lib/kernel/install.conf ]; then
+	install_conf=/usr/lib/kernel/install.conf
 else
 	install_conf=
 fi
 
 if [ -f "${install_conf}" ]; then
-	echo "Reading ${install_conf}..."
+	[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] && echo "Reading ${install_conf}..."
 	# shellcheck source=/dev/null
 	. "${install_conf}"
 
 	if [ -n "${layout}" ]; then
-		echo "${install_conf} configures layout=${layout}"
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "${install_conf} configures layout=${layout}"
 		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
 			INSTALLKERNEL_LAYOUT="${layout}"
 		fi
 	fi
 	if [ -n "${initrd_generator}" ]; then
-		echo "${install_conf} configures initrd_generator=${initrd_generator}"
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "${install_conf} configures initrd_generator=${initrd_generator}"
 		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
 			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
 		fi
 	fi
 	if [ -n "${uki_generator}" ]; then
-		echo "${install_conf} configures uki_generator=${uki_generator}"
+		[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+			echo "${install_conf} configures uki_generator=${uki_generator}"
 		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
 			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
 		fi
@@ -159,7 +473,7 @@ fi
 export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
 export INSTALLKERNEL_UKI_GENERATOR
-export INSTALLKERNEL_STAGING_AREA
+export INSTALLKERNEL_VERBOSE
 
 if [ -f /etc/os-release ]; then
 	# shellcheck source=/dev/null
@@ -174,201 +488,22 @@ export NAME="${NAME:=Linux}"
 export ID="${ID:=linux}"
 export PRETTY_NAME="${PRETTY_NAME:=Linux}"
 
-suffix=
-if [ "${INSTALLKERNEL_LAYOUT}" = efistub ]; then
-	if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]; then
-		# Relocate to ESP
-		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
-			if [ -d "${candidate}/EFI/${NAME}" ]; then
-				echo "Found vendor directory on ESP ${candidate}"
-				dir=${candidate}/EFI/${NAME}
-				suffix=.efi
-				# backwards compatibility
-				if [ -f "/boot/intel-uc.img" ]; then
-					cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
-				fi
-				if [ -f "/boot/amd-uc.img" ]; then
-					cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
-				fi
-			else
-				continue
-			fi
-		done
-
-		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
-			# No vendor dir found, try to create one
-			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
-				if [ -d "${candidate}/EFI" ]; then
-					echo "Creating vendor directory on ESP ${candidate}"
-					mkdir -p "${candidate}/EFI/${NAME}"
-					dir=${candidate}/EFI/${NAME}
-					suffix=.efi
-					# backwards compatibility
-					if [ -f "/boot/intel-uc.img" ]; then
-						cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
-					fi
-					if [ -f "/boot/amd-uc.img" ]; then
-						cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
-					fi
-				else
-					continue
-				fi
-			done
+# Now we actually run the install
+if [ ${_ik_install_all} -eq 1 ]; then
+	for ver in /lib/modules/*; do
+		ver=$(basename "${ver}")
+		img=/lib/modules/${ver}/vmlinuz
+		map=/lib/modules/${ver}/System.map
+		if [ -f "${img}" ] && [ -f "${map}" ]; then
+			main "${ver}" "${img}" "${map}" "${_ik_arg_4}"
+		else
+			[ "${INSTALLKERNEL_VERBOSE}" -gt 0 ] &&
+				echo "WARNING: skipping ${ver}, no kernel image available"
+			continue
 		fi
-
-		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
-			# Still no vendor dir, warn and fallback
-			echo "layout=efistub set, but did not find vendor directory on ESP"
-			echo "Please create the EFI/${NAME} directory on the EFI System partition manually"
-		fi
-	fi
-fi
-
-base_dir=$(dirname "${img}")
-prebuilt_initrd=${base_dir}/initrd
-prebuilt_uki=${base_dir}/uki.efi
-
-initrd=${INSTALLKERNEL_STAGING_AREA}/initrd
-uki=${INSTALLKERNEL_STAGING_AREA}/uki.efi
-
-# Copy prebuilt initrd, uki.efi at kernel location
-if [ -f "${prebuilt_initrd}" ]; then
-	cp "${prebuilt_initrd}" "${initrd}"
-fi
-if [ -f "${prebuilt_uki}" ]; then
-	cp "${prebuilt_uki}" "${uki}"
-fi
-
-# If installing in the usual directory, run the same scripts that hook
-# into kernel package installation.  Also make sure the PATH includes
-# /usr/sbin and /sbin, just as dpkg would.
-if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
-	err=0
-	(
-		#shellcheck disable=SC2030
-		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
-
-		if [ -z "${INSTALLKERNEL_PREINST_PLUGINS}" ]; then
-			INSTALLKERNEL_PREINST_PLUGINS="$(
-				dropindirs_sort \
-				"/etc/kernel/preinst.d" \
-				"/usr/lib/kernel/preinst.d"
-			)"
-		fi
-
-		for plugin in ${INSTALLKERNEL_PREINST_PLUGINS}; do
-			echo ""
-			echo "Running ${plugin} ${ver} ${img}..."
-			echo ""
-			"${plugin}" "${ver}" "${img}" || exit ${?}
-			echo ""
-			echo "Hook ${plugin} finished successfully"
-			echo ""
-		done
-	) || err=${?}
-	[ ${err} -eq 77 ] && exit 0
-	[ ${err} -ne 0 ] && exit ${err}
+	done
 else
-	echo "WARNING: A custom installation directory is specified as fourth argument."
-	echo "WARNING: In this configuration running installation hooks is not supported."
-	echo "WARNING: All pre-installation hooks are ignored."
-fi
-
-if [ "${img%vmlinux*}" != "${img}" ]; then
-	img_dest=vmlinux
-else
-	img_dest=vmlinuz
-fi
-
-# If we found a uki.efi, install it instead of kernel+initrd
-if [ -f "${uki}" ] && [ "${INSTALLKERNEL_LAYOUT}" = uki ]; then
-	suffix=.efi
-	if [ ${#} -le 3 ] || [ "${4%/boot}" != "${4}" ]; then
-		# Relocate to ESP
-		for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
-			if [ -d "${candidate}/EFI/Linux" ]; then
-				echo "Found UKI directory on ESP ${candidate}"
-				dir=${candidate}/EFI/Linux
-				img_dest=${ID}
-			else
-				continue
-			fi
-		done
-
-		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
-			# No UKI dir found, try to create one
-			for candidate in "${dir}/EFI" "${dir}/efi" "${dir}" "${dir%/boot}/efi"; do
-				if [ -d "${candidate}/EFI" ]; then
-					echo "Creating UKI directory on ESP ${candidate}"
-					mkdir -p "${candidate}/EFI/Linux"
-					dir=${candidate}/EFI/Linux
-					img_dest=${ID}
-				else
-					continue
-				fi
-			done
-		fi
-
-		if [ "${dir}" = "/boot" ] || [ "${dir}" = "${4}" ]; then
-			# Still no UKI dir, warn and fallback
-			echo "layout=uki set, but did not find the UKI directory on ESP"
-			echo "Please create the EFI/Linux directory on the EFI System partition manually"
-		fi
-	fi
-	echo "Installing Unified Kernel Image for ${ver}..."
-	updatever "${img_dest}" "${uki}" "${suffix}"
-else
-	echo "Installing kernel image for ${ver}..."
-	updatever "${img_dest}" "${img}" "${suffix}"
-	if [ -f "${initrd}" ]; then
-		echo "Installing initramfs image for ${ver}..."
-		updatever initramfs "${initrd}" .img
-	fi
-
-	echo "Installing System.map for ${ver}..."
-	updatever System.map "${map}"
-
-	config=$(dirname "${map}")
-	config="${config}/.config"
-	if [ -f "${config}" ]; then
-		echo "Installing config for ${ver}..."
-		updatever config "${config}"
-	fi
-fi
-
-# If installing in the usual directory, run the same scripts that hook
-# into kernel package installation.  Also make sure the PATH includes
-# /usr/sbin and /sbin, just as dpkg would.
-if [ ${#} -le 3 ] || [ "${4}" = "/boot" ]; then
-	err=0
-	(
-		#shellcheck disable=SC2031
-		export LC_ALL=C PATH="${PATH}:/usr/sbin:/sbin"
-
-		if [ -z "${INSTALLKERNEL_POSTINST_PLUGINS}" ]; then
-			INSTALLKERNEL_POSTINST_PLUGINS="$(
-				dropindirs_sort \
-				"/etc/kernel/postinst.d" \
-				"/usr/lib/kernel/postinst.d"
-			)"
-		fi
-
-		for plugin in ${INSTALLKERNEL_POSTINST_PLUGINS}; do
-			echo ""
-			echo "Running ${plugin} ${ver} ${dir}/${img_dest}-${ver}${suffix}..."
-			echo ""
-			"${plugin}" "${ver}" "${dir}/${img_dest}-${ver}${suffix}" || exit ${?}
-			echo ""
-			echo "Hook ${plugin} finished successfully"
-			echo ""
-		done
-	) || err=${?}
-	[ ${err} -eq 77 ] && exit 0
-	[ ${err} -ne 0 ] && exit ${err}
-else
-	echo "WARNING: A custom installation directory is specified as fourth argument."
-	echo "WARNING: In this configuration running installation hooks is not supported."
-	echo "WARNING: All post-installation hooks are ignored."
+	main "${_ik_arg_1}" "${_ik_arg_2}" "${_ik_arg_3}" "${_ik_arg_4}"
 fi
 
 exit 0
