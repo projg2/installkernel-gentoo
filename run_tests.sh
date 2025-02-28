@@ -403,7 +403,7 @@ for case in "${!TEST_CASES[@]}"; do
 
 	emerge --rage-clean --quiet --quiet-unmerge-warn sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	USE="${case}" emerge --quiet '=sys-kernel/installkernel-9999' || { echo "Error at case USE=\"${case}\"" && exit 1; }
-	USE="${case}" emerge --quiet sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
+	INSTALLKERNEL_VERBOSE=1 USE="${case}" emerge --quiet sys-kernel/gentoo-kernel-bin || { echo "Error at case USE=\"${case}\"" && exit 1; }
 	tree="$(tree -ifnav /boot /efi)"
 	if [[ "${TEST_CASES[${case}]}" == "${tree}" ]]; then
 		echo "Case USE=\"${case}\" matches"
