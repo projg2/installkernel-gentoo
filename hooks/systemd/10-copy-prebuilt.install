@@ -19,20 +19,20 @@ UKI=${IMAGE_DIR}/uki.efi
 
 if [ -f "${INITRD}" ]; then
 	[ "${KERNEL_INSTALL_VERBOSE}" = "1" ] && echo "Copying prebuilt initramfs to staging area"
-	cp "${INITRD}" "${KERNEL_INSTALL_STAGING_AREA}/initrd" || exit 1
+	cp -a "${INITRD}" "${KERNEL_INSTALL_STAGING_AREA}/initrd" || exit 1
 fi
 
 if [ -f "${UKI}" ]; then
 	[ "${KERNEL_INSTALL_VERBOSE}" = "1" ] && echo "Copying prebuilt UKI to staging area"
-	cp "${UKI}" "${KERNEL_INSTALL_STAGING_AREA}/uki.efi" || exit 1
+	cp -a "${UKI}" "${KERNEL_INSTALL_STAGING_AREA}/uki.efi" || exit 1
 fi
 
 if [ -f "/boot/intel-uc.img" ]; then
 	[ "${KERNEL_INSTALL_VERBOSE}" = "1" ] && echo "Copying prebuilt Intel early microcode image to staging area"
-	cp "/boot/intel-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-intel" || exit 1
+	cp -a "/boot/intel-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-intel" || exit 1
 fi
 
 if [ -f "/boot/amd-uc.img" ]; then
 	[ "${KERNEL_INSTALL_VERBOSE}" = "1" ] && echo "Copying prebuilt AMD early microcode image to staging area"
-	cp "/boot/amd-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-amd" || exit 1
+	cp -a "/boot/amd-uc.img" "${KERNEL_INSTALL_STAGING_AREA}/microcode-amd" || exit 1
 fi
