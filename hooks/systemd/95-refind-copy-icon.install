@@ -24,7 +24,11 @@ fi
 : "${NAME:=Linux}"
 : "${ID:=linux}"
 
-: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
+if [[ $(getconf LONG_BIT) == 64 ]]; then
+	: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
+else
+	: "${REFIND_ICON:=/usr/lib/refind/refind/icons/os_${ID}.png}"
+fi
 
 if [[ ! -f ${REFIND_ICON} ]]; then
 	echo "REFIND_ICON=${REFIND_ICON} not found"

@@ -10,7 +10,11 @@
 ver=${1}
 img=${2}
 
-: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
+if [[ $(getconf LONG_BIT) == 64 ]]; then
+	: "${REFIND_ICON:=/usr/lib64/refind/refind/icons/os_${ID}.png}"
+else
+	: "${REFIND_ICON:=/usr/lib/refind/refind/icons/os_${ID}.png}"
+fi
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
