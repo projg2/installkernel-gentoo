@@ -145,7 +145,7 @@ updatever() {
 		mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}${oldsuffix}"
 	fi
 
-	cp -a "${2}" "${dir}/${1}-${ver}${3}"
+	cp --dereference --preserve=all "${2}" "${dir}/${1}-${ver}${3}"
 
 	# Update static version-less symlink/copy
 	if [ -f "${dir}/${1}${3}" ] || [ -L "${dir}/${1}${3}" ]; then
@@ -168,7 +168,7 @@ updatever() {
 			# If they are hardlinked together, mv will fail.
 			rm -f "${dir}/${1}${oldsuffix}"
 			mv "${dir}/${1}${3}" "${dir}/${1}${oldsuffix}"
-			cp -a "${2}" "${dir}/${1}${3}"
+			cp --dereference --preserve=all "${2}" "${dir}/${1}${3}"
 		fi
 	fi
 }
@@ -234,10 +234,10 @@ main() {
 						suffix=.efi
 						# backwards compatibility
 						if [ -f "/boot/intel-uc.img" ]; then
-							cp -a "/boot/intel-uc.img" "${dir}/intel-uc.img"
+							cp --dereference --preserve=all "/boot/intel-uc.img" "${dir}/intel-uc.img"
 						fi
 						if [ -f "/boot/amd-uc.img" ]; then
-							cp -a "/boot/amd-uc.img" "${dir}/amd-uc.img"
+							cp --dereference --preserve=all "/boot/amd-uc.img" "${dir}/amd-uc.img"
 						fi
 					else
 						continue
@@ -263,10 +263,10 @@ main() {
 
 	# Copy prebuilt initrd, uki.efi at kernel location
 	if [ -f "${prebuilt_initrd}" ]; then
-		cp -a "${prebuilt_initrd}" "${initrd}"
+		cp --dereference --preserve=all "${prebuilt_initrd}" "${initrd}"
 	fi
 	if [ -f "${prebuilt_uki}" ]; then
-		cp -a "${prebuilt_uki}" "${uki}"
+		cp --dereference --preserve=all "${prebuilt_uki}" "${uki}"
 	fi
 
 	# If installing in the usual directory, run the same scripts that hook
