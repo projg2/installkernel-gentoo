@@ -210,10 +210,10 @@ main() {
 					suffix=.efi
 					# backwards compatibility
 					if [ -f "/boot/intel-uc.img" ]; then
-						cp "/boot/intel-uc.img" "${dir}/intel-uc.img"
+						cp --dereference --preserve=all "/boot/intel-uc.img" "${dir}/intel-uc.img"
 					fi
 					if [ -f "/boot/amd-uc.img" ]; then
-						cp "/boot/amd-uc.img" "${dir}/amd-uc.img"
+						cp --dereference --preserve=all "/boot/amd-uc.img" "${dir}/amd-uc.img"
 					fi
 				else
 					continue

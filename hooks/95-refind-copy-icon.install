@@ -48,7 +48,7 @@ main() {
 	if [[ -f ${icon} ]]; then
 		mv "${icon}" "${icon_old}" || die
 	fi
-	cp "${REFIND_ICON}" "${icon}" || die "Failed to copy icon file"
+	cp --dereference --preserve=all "${REFIND_ICON}" "${icon}" || die "Failed to copy icon file"
 
 	# If there is a version-less image, install an icon for it
 	local icon_nover=${icon//-${ver}/}
@@ -67,11 +67,11 @@ main() {
 		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${icon_nover} ]]; then
 		mv "${icon_nover}" "${icon_nover_old}" || die
-		cp "${icon}" "${icon_nover}" || die
+		cp --dereference --preserve=all "${icon}" "${icon_nover}" || die
 	elif [[ -L ${img//-${ver}/} ]]; then
 		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${img//-${ver}/} ]]; then
-		cp "${icon}" "${icon_nover}" || die
+		cp --dereference --preserve=all "${icon}" "${icon_nover}" || die
 	fi
 }
 

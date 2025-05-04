@@ -38,7 +38,7 @@ main() {
 
 	if [[ -f ${GRUB_CFG} ]]; then
 		einfo "Backing up existing grub config as ${GRUB_CFG}~..."
-		cp -v "${GRUB_CFG}"{,~} || die "Failed to save existing config"
+		cp --dereference --preserve=all "${GRUB_CFG}"{,~} || die "Failed to save existing config"
 	fi
 
 	if [[ -f /etc/os-release ]]; then

@@ -79,10 +79,10 @@ if [[ -L ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
 	fi
 elif [[ -f ${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX} ]]; then
 	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo "Updating static file for ${KERNEL_VERSION}..."
-	cp "${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${TRIES}${SUFFIX}" \
+	cp --dereference --preserve=all "${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}-${KERNEL_VERSION}${TRIES}${SUFFIX}" \
 		"${KERNEL_INSTALL_ROOT}/${STATIC_KERNEL_NAME}${SUFFIX}" || exit 1
 	if [[ -f ${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img ]]; then
-		cp "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" \
+		cp --dereference --preserve=all "${KERNEL_INSTALL_ROOT}/initramfs-${KERNEL_VERSION}.img" \
 			"${KERNEL_INSTALL_ROOT}/initramfs.img" || exit 1
 	fi
 fi

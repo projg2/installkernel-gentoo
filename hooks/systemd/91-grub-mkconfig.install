@@ -73,7 +73,7 @@ if [[ ${COMMAND} == add || ${COMMAND} == remove ]]; then
 	if [[ -f ${GRUB_CFG} ]]; then
 		[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
 			"Backing up existing grub config as ${GRUB_CFG}~"
-		cp "${GRUB_CFG}"{,~} || { echo "Failed to save existing config" && exit 1; }
+		cp --dereference --preserve=all "${GRUB_CFG}"{,~} || { echo "Failed to save existing config" && exit 1; }
 	fi
 
 	[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
