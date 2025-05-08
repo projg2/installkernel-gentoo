@@ -17,7 +17,7 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
-IUSE="dracut efistub grub refind systemd systemd-boot ugrd uki ukify"
+IUSE="dracut efistub grub refind sbctl systemd systemd-boot ugrd uki ukify"
 REQUIRED_USE="
 	systemd-boot? ( systemd )
 	ukify? ( uki )
@@ -69,6 +69,9 @@ RDEPEND="
 			sys-apps/systemd-utils[boot(-),ukify(-)]
 		)
 	)
+	sbctl? (
+		app-crypt/sbctl
+	)
 	ugrd? ( >=sys-kernel/ugrd-1.31.2 )
 	!=sys-apps/systemd-255.2-r1
 	!=sys-apps/systemd-255.2-r0
@@ -102,6 +105,7 @@ src_install() {
 	use grub && doexe hooks/91-grub-mkconfig.install
 	use efistub && doexe hooks/95-efistub-uefi-mkconfig.install
 	use refind && doexe hooks/95-refind-copy-icon.install
+	use sbctl && ! use systemd && doexe hooks/91-sbctl.install
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install

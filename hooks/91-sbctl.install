@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#shellcheck disable=SC2034
+
+# Copyright 2024 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by the
+# traditional installkernel, NOT by systemd's kernel-install. I.e. this plugin
+# is run when the systemd USE flag is disabled or SYSTEMD_KERNEL_INSTALL=0 is
+# set in the environment.
+
+ver=${1}
+img=${2}
+
+# familiar helpers, we intentionally don't use Gentoo functions.sh
+die() {
+	echo -e " ${NOCOLOR-\e[1;31m*\e[0m }${*}" >&2
+	exit 1
+}
+
+einfo() {
+	[[ ${INSTALLKERNEL_VERBOSE} == 1 ]] || return 0
+	echo -e " ${NOCOLOR-\e[1;32m*\e[0m }${*}"
+}
+
+
+main() {
+	# re-define for subst to work
+	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
+
+	# do nothing if secureboot key directory doesn't exist
+	if ! [ "$(sbctl setup --print-state --json | awk '/installed/ { gsub(/,$/,"",$2); print $2 }')" = "true" ]; then
+		einfo "Secureboot key directory doesn't exist, not signing!"
+		exit 0
+	fi
+
+	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
+
+	einfo "sbctl: Signing kernel $img"
+	sbctl sign -s $img 1> /dev/null
+}
+
+main
