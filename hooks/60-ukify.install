@@ -58,8 +58,6 @@ main() {
 		ewarn "ukify is not installed, not generating an UKI" && exit 0
 	fi
 
-	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
-
 	ukify_gen_args=(
 		build
 		--linux="${img}"

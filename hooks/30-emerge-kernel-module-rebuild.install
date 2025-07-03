@@ -93,8 +93,6 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
-	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
-
 	local candidates=(
 		"${ROOT%/}/lib/modules/${ver}/build"
 		"${ROOT%/}/lib/modules/${ver}/source"

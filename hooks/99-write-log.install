@@ -33,8 +33,6 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
-	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
-
 	local install_dir=/boot
 	local kernel=
 	local initrd=

@@ -28,8 +28,6 @@ main() {
 	# do nothing if somehow uefi-mkconfig is not installed
 	[[ -x $(command -v uefi-mkconfig) ]] || { ewarn "uefi-mkconfig command not available" && exit 0; }
 
-	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
-
 	einfo "Updating UEFI configuration..."
 	uefi-mkconfig || die "uefi-mkconfig failed"
 }
