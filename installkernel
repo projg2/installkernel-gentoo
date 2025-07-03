@@ -145,7 +145,7 @@ updatever() {
 		mv "${dir}/${1}-${ver}${3}" "${dir}/${1}-${ver}${oldsuffix}"
 	fi
 
-	cp --dereference --preserve=all "${2}" "${dir}/${1}-${ver}${3}"
+	install -m 0644 "${2}" "${dir}/${1}-${ver}${3}"
 
 	# Update static version-less symlink/copy
 	if [ -f "${dir}/${1}${3}" ] || [ -L "${dir}/${1}${3}" ]; then
@@ -168,7 +168,7 @@ updatever() {
 			# If they are hardlinked together, mv will fail.
 			rm -f "${dir}/${1}${oldsuffix}"
 			mv "${dir}/${1}${3}" "${dir}/${1}${oldsuffix}"
-			cp --dereference --preserve=all "${2}" "${dir}/${1}${3}"
+			install -m 0644 "${2}" "${dir}/${1}${3}"
 		fi
 	fi
 }
@@ -210,10 +210,10 @@ main() {
 					suffix=.efi
 					# backwards compatibility
 					if [ -f "/boot/intel-uc.img" ]; then
-						cp --dereference --preserve=all "/boot/intel-uc.img" "${dir}/intel-uc.img"
+						install -m 0644 "/boot/intel-uc.img" "${dir}/intel-uc.img"
 					fi
 					if [ -f "/boot/amd-uc.img" ]; then
-						cp --dereference --preserve=all "/boot/amd-uc.img" "${dir}/amd-uc.img"
+						install -m 0644 "/boot/amd-uc.img" "${dir}/amd-uc.img"
 					fi
 				else
 					continue
@@ -234,10 +234,10 @@ main() {
 						suffix=.efi
 						# backwards compatibility
 						if [ -f "/boot/intel-uc.img" ]; then
-							cp --dereference --preserve=all "/boot/intel-uc.img" "${dir}/intel-uc.img"
+							install -m 0644 "/boot/intel-uc.img" "${dir}/intel-uc.img"
 						fi
 						if [ -f "/boot/amd-uc.img" ]; then
-							cp --dereference --preserve=all "/boot/amd-uc.img" "${dir}/amd-uc.img"
+							install -m 0644 "/boot/amd-uc.img" "${dir}/amd-uc.img"
 						fi
 					else
 						continue

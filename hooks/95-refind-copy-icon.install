@@ -31,8 +31,6 @@ main() {
 	# re-define for subst to work
 	[[ -n ${NOCOLOR+yes} ]] && NOCOLOR=
 
-	[[ ${EUID} -eq 0 ]] || die "Please run this script as root"
-
 	if [[ ! -f ${REFIND_ICON} ]]; then
 		die "REFIND_ICON=${REFIND_ICON} not found"
 	fi
@@ -48,7 +46,7 @@ main() {
 	if [[ -f ${icon} ]]; then
 		mv "${icon}" "${icon_old}" || die
 	fi
-	cp --dereference --preserve=all "${REFIND_ICON}" "${icon}" || die "Failed to copy icon file"
+	install -m 0644 "${REFIND_ICON}" "${icon}" || die "Failed to copy icon file"
 
 	# If there is a version-less image, install an icon for it
 	local icon_nover=${icon//-${ver}/}
@@ -67,11 +65,11 @@ main() {
 		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${icon_nover} ]]; then
 		mv "${icon_nover}" "${icon_nover_old}" || die
-		cp --dereference --preserve=all "${icon}" "${icon_nover}" || die
+		install -m 0644 "${icon}" "${icon_nover}" || die
 	elif [[ -L ${img//-${ver}/} ]]; then
 		ln -sf "$(basename "${icon}")" "${icon_nover}" || die
 	elif [[ -f ${img//-${ver}/} ]]; then
-		cp --dereference --preserve=all "${icon}" "${icon_nover}" || die
+		install -m 0644 "${icon}" "${icon_nover}" || die
 	fi
 }
 
