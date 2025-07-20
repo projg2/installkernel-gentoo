@@ -1,0 +1,64 @@
+#!/bin/bash
+
+COMMAND=${1:?}
+KERNEL_VERSION=${2:?}
+#shellcheck disable=SC2034
+BOOT_DIR_ABS=${3:?}
+KERNEL_IMAGE=${4:?}
+BASE_DIR=$(dirname "${KERNEL_IMAGE}")
+
+# If the initrd was provided on the kernel command line, we shouldn't generate our own.
+if [[ "${COMMAND}" != "add" || "${#}" -gt 4 ]]; then
+    exit 0
+fi
+
+# Do not attempt to create initramfs if the supplied image is already a UKI
+if [[ "${KERNEL_INSTALL_IMAGE_TYPE}" = "uki" ]]; then
+    exit 0
+fi
+
+# Skip kernel installation if zfs has not been built yet
+if (grep ' / ' /proc/mounts | grep -q zfs) && ! modinfo zfs -k "${KERNEL_VERSION}" &>/dev/null
+then
+     [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+        "root is zfs, but the zfs module is missing, please build the zfs module and retry"
+    exit 77
+fi
+
+INITRAMFS_GEN_ARGS=(
+    # if uefi=yes is used, dracut needs to locate the kernel image
+    --kernel-image "${KERNEL_IMAGE}"
+)
+
+[[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && INITRAMFS_GEN_ARGS+=( --verbose )
+
+if [[ ${KERNEL_INSTALL_UKI_GENERATOR} == dracut ]]; then
+    # We are chosen to generate the UKI as well as initrd
+    IMAGE=uki.efi
+    INITRAMFS_GEN_ARGS+=( --uefi )
+elif [[ ${KERNEL_INSTALL_INITRD_GENERATOR} == dracut ]]; then
+    # We are the initrd generator
+    IMAGE=initrd
+    INITRAMFS_GEN_ARGS=( --no-uefi )
+else
+    # No install.conf preference set
+    IMAGE=dracut-tmp
+fi
+
+if [[ -f ${BASE_DIR}/${IMAGE} ]]; then
+    # we found an initrd or uki.efi at the same place as the kernel
+    # use this and don't generate a new one
+    [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+        "There is an ${IMAGE} image at the same place as the kernel, skipping generating a new one"
+    cp --reflink=auto "${BASE_DIR}/${IMAGE}" "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
+        && chown root:root "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
+        && chmod 0600 "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
+        && exit 0
+fi
+
+INITRAMFS_GEN_ARGS+=(
+    # positional arguments
+    "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" "${KERNEL_VERSION}"
+)
+
+dracut "${INITRAMFS_GEN_ARGS[@]}" || exit 1
