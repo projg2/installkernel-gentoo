@@ -28,6 +28,7 @@ fi
 INITRAMFS_GEN_ARGS=(
     # if uefi=yes is used, dracut needs to locate the kernel image
     --kernel-image "${KERNEL_IMAGE}"
+    --force
 )
 
 [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && INITRAMFS_GEN_ARGS+=( --verbose )
