@@ -91,11 +91,11 @@ main() {
 			die "Cannot read ${INSTALLKERNEL_STAGING_AREA}/${out}"
 		if [[ ${magic} == MZ ]]; then
 			einfo "Combined UEFI kernel+initramfs executable found"
-			mv "${INSTALLKERNEL_STAGING_AREA}/dracut-tmp" \
+			mv "${INSTALLKERNEL_STAGING_AREA}/${out}" \
 				"${INSTALLKERNEL_STAGING_AREA}/uki.efi" || die "Failed to rename UKI"
 		else
 			einfo "Plain initramfs image found"
-			mv "${INSTALLKERNEL_STAGING_AREA}/dracut-tmp" \
+			mv "${INSTALLKERNEL_STAGING_AREA}/${out}" \
 				"${INSTALLKERNEL_STAGING_AREA}/initrd" || die "Failed to rename initramfs"
 		fi
 	fi
