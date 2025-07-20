@@ -94,7 +94,7 @@ src_install() {
 
 	exeinto /usr/lib/kernel/preinst.d
 	doexe hooks/99-check-diskspace.install
-	use dracut && doexe hooks/50-dracut.install
+	use dracut && doexe hooks/52-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
 	exeinto /usr/lib/kernel/postinst.d

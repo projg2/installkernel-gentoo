@@ -50,6 +50,7 @@ main() {
 	initramfs_gen_args=(
 		# if uefi=yes is used, dracut needs to locate the kernel image
 		--kernel-image "${img}"
+		--force
 	)
 
 	[[ ${INSTALLKERNEL_VERBOSE} == 1 ]] && initramfs_gen_args+=( --verbose )
