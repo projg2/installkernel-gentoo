@@ -46,17 +46,6 @@ else
     IMAGE=dracut-tmp
 fi
 
-if [[ -f ${BASE_DIR}/${IMAGE} ]]; then
-    # we found an initrd or uki.efi at the same place as the kernel
-    # use this and don't generate a new one
-    [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
-        "There is an ${IMAGE} image at the same place as the kernel, skipping generating a new one"
-    cp --reflink=auto "${BASE_DIR}/${IMAGE}" "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
-        && chown root:root "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
-        && chmod 0600 "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
-        && exit 0
-fi
-
 INITRAMFS_GEN_ARGS+=(
     # positional arguments
     "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" "${KERNEL_VERSION}"

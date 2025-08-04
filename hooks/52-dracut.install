@@ -68,14 +68,6 @@ main() {
 		out=dracut-tmp
 	fi
 
-	if [[ -f ${basedir}/${out} ]]; then
-		einfo "There is an ${out} image at the same place as the kernel, skipping generating a new one"
-		cp --reflink=auto "${basedir}/${out}" "${INSTALLKERNEL_STAGING_AREA}/${out}" || die
-		chown root:root "${INSTALLKERNEL_STAGING_AREA}/${out}" || die
-		chmod 0600 "${INSTALLKERNEL_STAGING_AREA}/${out}" || die
-		exit 0
-	fi
-
 	initramfs_gen_args+=(
 		# positional arguments
 		"${INSTALLKERNEL_STAGING_AREA}/${out}" "${ver}"
