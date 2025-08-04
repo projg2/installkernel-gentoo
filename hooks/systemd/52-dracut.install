@@ -5,7 +5,6 @@ KERNEL_VERSION=${2:?}
 #shellcheck disable=SC2034
 BOOT_DIR_ABS=${3:?}
 KERNEL_IMAGE=${4:?}
-BASE_DIR=$(dirname "${KERNEL_IMAGE}")
 
 # If the initrd was provided on the kernel command line, we shouldn't generate our own.
 if [[ "${COMMAND}" != "add" || "${#}" -gt 4 ]]; then

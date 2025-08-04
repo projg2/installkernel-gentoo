@@ -8,7 +8,6 @@
 
 ver=${1}
 img=${2}
-basedir=$(dirname "${img}")
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {
