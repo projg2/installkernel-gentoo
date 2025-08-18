@@ -18,17 +18,17 @@ if [ "${KERNEL_INSTALL_IMAGE_TYPE}" = "uki" ]; then
     exit 0
 fi
 
-if [ -z ${KERNEL_INSTALL_LAYOUT} ]; then
+if [ -z "${KERNEL_INSTALL_LAYOUT}" ]; then
 	echo "No layout= configured by install.conf"
 	exit 1
 fi
 
-if [ -z ${KERNEL_INSTALL_INITRD_GENERATOR} ]; then
+if [ -z "${KERNEL_INSTALL_INITRD_GENERATOR}" ]; then
 	echo "No initrd_generator= configured by install.conf"
 	exit 1
 fi
 
-if [ -z ${KERNEL_INSTALL_UKI_GENERATOR} ]; then
+if [ -z "${KERNEL_INSTALL_UKI_GENERATOR}" ]; then
 	echo "No uki_generator= configured by install.conf"
 	exit 1
 fi
