@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+
+# Copyright 2023-2025 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+COMMAND=${1:?}
+
+# If the initrd was provided on the kernel command line, we shouldn't generate our own.
+if [ "${COMMAND}" != "add" ] || [ "${#}" -gt 4 ]; then
+    exit 0
+fi
+
+# Do not attempt to create initramfs if the supplied image is already a UKI
+if [ "${KERNEL_INSTALL_IMAGE_TYPE}" = "uki" ]; then
+    exit 0
+fi
+
+if [ -z ${KERNEL_INSTALL_LAYOUT} ]; then
+	echo "No layout= configured by install.conf"
+	exit 1
+fi
+
+if [ -z ${KERNEL_INSTALL_INITRD_GENERATOR} ]; then
+	echo "No initrd_generator= configured by install.conf"
+	exit 1
+fi
+
+if [ -z ${KERNEL_INSTALL_UKI_GENERATOR} ]; then
+	echo "No uki_generator= configured by install.conf"
+	exit 1
+fi

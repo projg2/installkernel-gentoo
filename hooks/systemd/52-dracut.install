@@ -32,17 +32,20 @@ INITRAMFS_GEN_ARGS=(
 
 [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && INITRAMFS_GEN_ARGS+=( --verbose )
 
-if [[ ${KERNEL_INSTALL_UKI_GENERATOR} == dracut ]]; then
-    # We are chosen to generate the UKI as well as initrd
-    IMAGE=uki.efi
-    INITRAMFS_GEN_ARGS+=( --uefi )
-elif [[ ${KERNEL_INSTALL_INITRD_GENERATOR} == dracut ]]; then
-    # We are the initrd generator
-    IMAGE=initrd
-    INITRAMFS_GEN_ARGS+=( --no-uefi )
+if [[ ${KERNEL_INSTALL_INITRD_GENERATOR} == dracut ]]; then
+    if [[ ${KERNEL_INSTALL_UKI_GENERATOR} == dracut ]]; then
+        # We are chosen to generate the UKI as well as initrd
+        IMAGE=uki.efi
+        INITRAMFS_GEN_ARGS+=( --uefi )
+    else
+        # We are the initrd generator
+        IMAGE=initrd
+        INITRAMFS_GEN_ARGS+=( --no-uefi )
+    fi
 else
-    # No install.conf preference set
-    IMAGE=dracut-tmp
+    [[ ${KERNEL_INSTALL_VERBOSE} == 1 ]] && echo \
+        "initrd_generator=${KERNEL_INSTALL_INITRD_GENERATOR}, not running dracut"
+    exit 0
 fi
 
 INITRAMFS_GEN_ARGS+=(
@@ -51,21 +54,3 @@ INITRAMFS_GEN_ARGS+=(
 )
 
 dracut "${INITRAMFS_GEN_ARGS[@]}" || exit 1
-
-# Fallback path for if we don't know if we generated an initramfs or
-# UKI. If dracut is used in uefi=yes mode, initrd will actually
-# be a combined kernel+initramfs UEFI executable. We can easily
-# recognize it by PE magic (vs cpio for a regular initramfs)
-if [[ ${IMAGE} == dracut-tmp ]]; then
-    read -rn 2 magic <"${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" ||
-        die "Cannot read ${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}"
-    if [[ ${magic} == MZ ]]; then
-        einfo "Combined UEFI kernel+initramfs executable found"
-        mv "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
-            "${KERNEL_INSTALL_STAGING_AREA}/uki.efi" || die "Failed to rename UKI"
-    else
-        einfo "Plain initramfs image found"
-        mv "${KERNEL_INSTALL_STAGING_AREA}/${IMAGE}" \
-            "${KERNEL_INSTALL_STAGING_AREA}/initrd" || die "Failed to rename initramfs"
-    fi
-fi

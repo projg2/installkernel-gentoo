@@ -54,17 +54,19 @@ main() {
 
 	[[ ${INSTALLKERNEL_VERBOSE} == 1 ]] && initramfs_gen_args+=( --verbose )
 
-	if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
-		einfo "Using dracut as the initramfs and UKI generator..."
-		initramfs_gen_args+=( --uefi )
-		out=uki.efi
-	elif [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
-		einfo "Using dracut as the initramfs generator..."
-		initramfs_gen_args+=( --no-uefi )
-		out=initrd
+	if [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
+		if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
+			einfo "Using dracut as the initramfs and UKI generator..."
+			initramfs_gen_args+=( --uefi )
+			out=uki.efi
+		else
+			einfo "Using dracut as the initramfs generator..."
+			initramfs_gen_args+=( --no-uefi )
+			out=initrd
+		fi
 	else
-		einfo "No install.conf preference set, falling back to dracut.conf..."
-		out=dracut-tmp
+		einfo "initrd_generator=${INSTALLKERNEL_INITRD_GENERATOR}, not running dracut"
+		exit 0
 	fi
 
 	initramfs_gen_args+=(
@@ -73,24 +75,6 @@ main() {
 	)
 
 	dracut "${initramfs_gen_args[@]}" || die "Failed to generate initramfs"
-
-	# Fallback path for if we don't know if we generated an initramfs or
-	# UKI. If dracut is used in uefi=yes mode, initrd will actually
-	# be a combined kernel+initramfs UEFI executable. We can easily
-	# recognize it by PE magic (vs cpio for a regular initramfs)
-	if [[ ${out} == dracut-tmp ]]; then
-		read -rn 2 magic <"${INSTALLKERNEL_STAGING_AREA}/${out}" ||
-			die "Cannot read ${INSTALLKERNEL_STAGING_AREA}/${out}"
-		if [[ ${magic} == MZ ]]; then
-			einfo "Combined UEFI kernel+initramfs executable found"
-			mv "${INSTALLKERNEL_STAGING_AREA}/${out}" \
-				"${INSTALLKERNEL_STAGING_AREA}/uki.efi" || die "Failed to rename UKI"
-		else
-			einfo "Plain initramfs image found"
-			mv "${INSTALLKERNEL_STAGING_AREA}/${out}" \
-				"${INSTALLKERNEL_STAGING_AREA}/initrd" || die "Failed to rename initramfs"
-		fi
-	fi
 }
 
 main
