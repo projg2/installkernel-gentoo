@@ -466,6 +466,9 @@ if [ -f "${install_conf}" ]; then
 		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
 			INSTALLKERNEL_LAYOUT="${layout}"
 		fi
+	else
+		echo "No layout= configured by ${install_conf}"
+		exit 1
 	fi
 	if [ -n "${initrd_generator}" ]; then
 		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
@@ -474,6 +477,9 @@ if [ -f "${install_conf}" ]; then
 		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
 			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
 		fi
+	else
+		echo "No initrd_generator= configured by ${install_conf}"
+		exit 1
 	fi
 	if [ -n "${uki_generator}" ]; then
 		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
@@ -482,7 +488,13 @@ if [ -f "${install_conf}" ]; then
 		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
 			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
 		fi
+	else
+		echo "No uki_generator= configured by ${install_conf}"
+		exit 1
 	fi
+else
+	echo "No install.conf found at ${install_conf}"
+	exit 1
 fi
 
 export INSTALLKERNEL_LAYOUT

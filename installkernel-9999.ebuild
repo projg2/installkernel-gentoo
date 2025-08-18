@@ -37,7 +37,7 @@ REQUIRED_USE="
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	dracut? (
-		>=sys-kernel/dracut-108
+		>=sys-kernel/dracut-108-r3
 		uki? (
 			|| (
 				sys-apps/systemd[boot(-)]
@@ -105,6 +105,7 @@ src_install() {
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
+	doexe hooks/systemd/05-check-config.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/85-check-diskspace.install
 	doexe hooks/systemd/90-compat.install
