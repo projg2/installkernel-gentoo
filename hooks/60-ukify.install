@@ -66,7 +66,7 @@ main() {
 	)
 
 	for cpu in intel amd; do
-		[[ -f "/boot/${cpu}-uc.img" ]] && ukify_gen_args+=(--initrd="/boot/${cpu}-uc.img")
+		[[ -f "/boot/${cpu}-uc.img" ]] && ukify_gen_args+=(--microcode="/boot/${cpu}-uc.img")
 	done
 
 	initrd="${INSTALLKERNEL_STAGING_AREA}/initrd"
@@ -89,24 +89,6 @@ main() {
 		elif [[ -f "/usr/lib/modules/${ver}/dtb/${devicetree_path}" ]]; then
 			ukify_gen_args+=(--devicetree="/usr/lib/modules/${ver}/dtb/${devicetree_path}")
 		fi
-	fi
-
-	if [[ ${SECUREBOOT_SIGN_KEY} == pkcs11:* ]]; then
-		ukify_gen_args+=(
-			--secureboot-private-key="${SECUREBOOT_SIGN_KEY}"
-			--signtool=sbsign
-			--signing-engine=pkcs11
-		)
-	elif [[ -r ${SECUREBOOT_SIGN_KEY} ]]; then
-		ukify_gen_args+=(
-			--secureboot-private-key="${SECUREBOOT_SIGN_KEY}"
-		)
-	fi
-
-	if [[ -r ${SECUREBOOT_SIGN_CERT} ]]; then
-		ukify_gen_args+=(
-			--secureboot-certificate="${SECUREBOOT_SIGN_CERT}"
-		)
 	fi
 
 	einfo "Calling ukify with arguments: ${ukify_gen_args[*]}"
