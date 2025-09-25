@@ -65,8 +65,8 @@ RDEPEND="
 	)
 	ukify? (
 		|| (
-			sys-apps/systemd[boot(-),ukify(-)]
-			sys-apps/systemd-utils[boot(-),ukify(-)]
+			>=sys-apps/systemd-256[boot(-),ukify(-)]
+			>=sys-apps/systemd-utils-256[boot(-),ukify(-)]
 		)
 	)
 	ugrd? ( >=sys-kernel/ugrd-1.31.2 )
