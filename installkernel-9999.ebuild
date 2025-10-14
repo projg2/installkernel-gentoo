@@ -10,13 +10,17 @@ HOMEPAGE="
 	https://github.com/projg2/installkernel-gentoo
 	https://wiki.gentoo.org/wiki/Installkernel
 "
-SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz
-	-> ${P}.tar.gz"
-S="${WORKDIR}/${PN}-gentoo-${PV}"
+
+if [[ ${PV} == 9999 ]]; then
+	EGIT_REPO_URI="https://github.com/projg2/installkernel-gentoo.git"
+	inherit git-r3
+else
+	SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
+fi
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
 IUSE="dracut efistub grub refind systemd systemd-boot ugrd uki ukify"
 REQUIRED_USE="
 	systemd-boot? ( systemd )
