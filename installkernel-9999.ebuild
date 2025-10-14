@@ -13,6 +13,7 @@ HOMEPAGE="
 
 if [[ ${PV} == 9999 ]]; then
 	EGIT_REPO_URI="https://github.com/projg2/installkernel-gentoo.git"
+	[[ -n ${LOCAL_TEST} ]] && EGIT_REPO_URI="file:///tmp/installkernel-gentoo-9999/"
 	inherit git-r3
 else
 	SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz -> ${P}.tar.gz"
