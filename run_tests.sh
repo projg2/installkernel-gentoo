@@ -4,7 +4,7 @@
 cd /tmp || exit 1
 
 cp /tmp/installkernel-gentoo-9999/installkernel-9999.ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild || exit 1
-tar -czf /var/cache/distfiles/installkernel-9999.tar.gz installkernel-gentoo-9999/. || exit 1
+ls -la /tmp/installkernel-gentoo-9999/ || exit 1
 ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild manifest || exit 1
 
 INST_KERN="$(ls /boot/kernel*-gentoo-dist* || exit 1)"
