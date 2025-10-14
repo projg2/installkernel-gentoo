@@ -1,4 +1,4 @@
-name: Test installkernel
+name: ShellCheck Lint
 on:
   push:
     branches: [ master ]

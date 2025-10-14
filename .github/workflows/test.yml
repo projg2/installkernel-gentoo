@@ -1,4 +1,4 @@
-name: Test installkernel
+name: installkernel tests
 on:
   push:
     branches: [ master ]
