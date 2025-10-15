@@ -4,7 +4,9 @@
 cd /tmp || exit 1
 
 cp /tmp/installkernel-gentoo-9999/installkernel-9999.ebuild /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild || exit 1
-ls -la /tmp/installkernel-gentoo-9999/ || exit 1
+
+# Modify EGIT_REPO_URI to use local path instead of GitHub
+sed -i 's|EGIT_REPO_URI="https://github.com/projg2/installkernel-gentoo.git"|EGIT_REPO_URI="file:///tmp/installkernel-gentoo-9999/"|' /var/db/repos/gentoo/sys-kernel/installkernel/installkernel-9999.ebuild || exit 1
 
 INST_KERN="$(ls /boot/kernel*-gentoo-dist* || exit 1)"
 INST_KV_FULL="${INST_KERN#/boot/kernel-}"
