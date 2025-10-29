@@ -97,7 +97,7 @@ src_install() {
 	keepdir /usr/lib/kernel/postinst.d
 
 	exeinto /usr/lib/kernel/preinst.d
-	doexe hooks/05-check-config.install
+	doexe hooks/05-check-chroot.install
 	doexe hooks/99-check-diskspace.install
 	use dracut && doexe hooks/52-dracut.install
 	use ukify && doexe hooks/60-ukify.install
