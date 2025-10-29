@@ -6,12 +6,11 @@
 # plugin is run when the systemd USE flag is enabled or
 # SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
 
-[ "${1:?}" == "add" ] || exit 0
+[ "${1:?}" = "add" ] || exit 0
 
 _test_dracut_cmdline() {
 	[ -e "/etc/cmdline" ] && return 1
 
-	local _i
 	for _i in /etc/cmdline.d/*.conf; do
 		[ -e "${_i}" ] && return 1
 	done
@@ -45,7 +44,6 @@ _test_kernel_cmdline() {
 }
 
 _test_uki_cmdline() {
-	local _i
 	for _i in "${KERNEL_INSTALL_CONF_ROOT}/uki.conf" \
 				"/etc/kernel/uki.conf" \
 				"/run/kernel/uki.conf" \
@@ -56,12 +54,13 @@ _test_uki_cmdline() {
 		fi
 	done
 	return 0
+}
 
 if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 	[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ] && \
 		echo "Chroot detected"
 
-	if [ "${KERNEL_INSTALL_INITRD_GENERATOR}" == "dracut" ] && [ "${#}" -lt 5 ]; then
+	if [ "${KERNEL_INSTALL_INITRD_GENERATOR}" = "dracut" ] && [ "${#}" -lt 5 ]; then
 		if [ "${KERNEL_INSTALL_IMAGE_TYPE}" != "uki" ] && _test_dracut_cmdline; then
 			echo ""
 			echo "WARNING: Dracut will be run from inside a chroot but no"
@@ -76,7 +75,7 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 		fi
 	fi
 
-	if [ "${KERNEL_INSTALL_LAYOUT}" == "bls" ]; then
+	if [ "${KERNEL_INSTALL_LAYOUT}" = "bls" ]; then
 		if _test_kernel_cmdline; then
 			echo "WARNING: kernel-install is run from inside a chroot but"
 			echo "no cmdline was configured. This would cause the bootloader"
@@ -88,8 +87,8 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo ""
 			exit 1
 		fi
-	elif [ "${KERNEL_INSTALL_LAYOUT}" == "uki" ] && \
-		[ "${KERNEL_INSTALL_UKI_GENERATOR}" == "ukify" ]; then
+	elif [ "${KERNEL_INSTALL_LAYOUT}" = "uki" ] && \
+		[ "${KERNEL_INSTALL_UKI_GENERATOR}" = "ukify" ]; then
 		if _test_kernel_cmdline && _test_uki_cmdline; then
 			echo "WARNING: Ukify will be run from inside a chroot but no"
 			echo "cmdline for ukify was configured. Ukify would fallback"
