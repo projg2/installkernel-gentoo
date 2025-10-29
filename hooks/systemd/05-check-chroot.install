@@ -1,0 +1,105 @@
+#!/usr/bin/env sh
+
+# Copyright 2025 Gentoo Authors
+# This script is installed by sys-kernel/installkernel, it is executed by
+# systemd's kernel-install, NOT by the traditional installkernel. I.e. this
+# plugin is run when the systemd USE flag is enabled or
+# SYSTEMD_KERNEL_INSTALL=1 is set in the environment.
+
+[ "${1:?}" == "add" ] || exit 0
+
+_test_dracut_cmdline() {
+	[ -e "/etc/cmdline" ] && return 1
+
+	local _i
+	for _i in /etc/cmdline.d/*.conf; do
+		[ -e "${_i}" ] && return 1
+	done
+
+	if [ -e /etc/dracut.conf ]; then
+		if grep -q '^kernel_cmdline=' /etc/dracut.conf; then
+			return 1
+		elif grep -q '^hostonly_cmdline=.*no' /etc/dracut.conf; then
+			return 1
+		fi
+	fi
+
+	if [ -d /etc/dracut.conf.d ]; then
+		if grep -qr '^kernel_cmdline=' /etc/dracut.conf.d; then
+			return 1
+		elif grep -qr '^hostonly_cmdline=.*no' /etc/dracut.conf.d; then
+			return 1
+		fi
+	fi
+
+	return 0
+}
+
+_test_kernel_cmdline() {
+	[ -f "${KERNEL_INSTALL_CONF_ROOT}/cmdline" ] && return 1
+	[ -f "/etc/kernel/cmdline" ] && return 1
+	[ -f "/run/kernel/cmdline" ] && return 1
+	[ -f "/usr/local/lib/kernel/cmdline" ] && return 1
+    [ -f "/usr/lib/kernel/cmdline" ] && return 1
+    return 0
+}
+
+_test_uki_cmdline() {
+	local _i
+	for _i in "${KERNEL_INSTALL_CONF_ROOT}/uki.conf" \
+				"/etc/kernel/uki.conf" \
+				"/run/kernel/uki.conf" \
+				"/usr/local/lib/kernel/uki.conf" \
+				"/usr/lib/kernel/uki.conf"; do
+		if [ -f "${_i}" ]; then
+			grep -q '^Cmdline=' "${_i}" && return 1
+		fi
+	done
+	return 0
+
+if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
+	[ "${KERNEL_INSTALL_VERBOSE}" -gt 0 ] && \
+		echo "Chroot detected"
+
+	if [ "${KERNEL_INSTALL_INITRD_GENERATOR}" == "dracut" ] && [ "${#}" -lt 5 ]; then
+		if [ "${KERNEL_INSTALL_IMAGE_TYPE}" != "uki" ] && _test_dracut_cmdline; then
+			echo ""
+			echo "WARNING: Dracut will be run from inside a chroot but no"
+			echo "cmdline for dracut was configured. Dracut would fallback"
+			echo "to using /proc/cmdline, which is generally not what you"
+			echo "want. Exiting..."
+			echo ""
+			echo "Override this check with:"
+			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo ""
+			exit 1
+		fi
+	fi
+
+	if [ "${KERNEL_INSTALL_LAYOUT}" == "bls" ]; then
+		if _test_kernel_cmdline; then
+			echo "WARNING: kernel-install is run from inside a chroot but"
+			echo "no cmdline was configured. This would cause the bootloader"
+			echo "configuration to fallback to using /proc/cmdline, which is"
+			echo "generally not what you want. Exiting..."
+			echo ""
+			echo "Override this check with:"
+			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo ""
+			exit 1
+		fi
+	elif [ "${KERNEL_INSTALL_LAYOUT}" == "uki" ] && \
+		[ "${KERNEL_INSTALL_UKI_GENERATOR}" == "ukify" ]; then
+		if _test_kernel_cmdline && _test_uki_cmdline; then
+			echo "WARNING: Ukify will be run from inside a chroot but no"
+			echo "cmdline for ukify was configured. Ukify would fallback"
+			echo "to using /proc/cmdline, which is generally not what you"
+			echo "want. Exiting..."
+			echo ""
+			echo "Override this check with:"
+			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo ""
+			exit 1
+		fi
+	fi
+fi
