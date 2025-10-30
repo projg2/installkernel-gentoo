@@ -67,7 +67,7 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "want. Exiting..."
 			echo ""
 			echo "Override this check with:"
-			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
 			echo ""
 			exit 1
 		fi
@@ -81,7 +81,7 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "generally not what you want. Exiting..."
 			echo ""
 			echo "Override this check with:"
-			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
 			echo ""
 			exit 1
 		fi
@@ -94,7 +94,7 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "want. Exiting..."
 			echo ""
 			echo "Override this check with:"
-			echo "    touch /etc/kernel/install.d/05-check-chroot.install"
+			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
 			echo ""
 			exit 1
 		fi
