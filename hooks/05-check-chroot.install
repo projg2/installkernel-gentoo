@@ -18,6 +18,9 @@ _test_dracut_cmdline() {
 			return 1
 		elif grep -q '^hostonly_cmdline=.*no' /etc/dracut.conf; then
 			return 1
+		elif grep -q '^hostonly=.*no' /etc/dracut.conf &&
+			! grep -q '^hostonly_cmdline=.*yes' /etc/dracut.conf; then
+			return 1
 		fi
 	fi
 
@@ -25,6 +28,9 @@ _test_dracut_cmdline() {
 		if grep -qr '^kernel_cmdline=' /etc/dracut.conf.d; then
 			return 1
 		elif grep -qr '^hostonly_cmdline=.*no' /etc/dracut.conf.d; then
+			return 1
+		elif grep -qr '^hostonly=.*no' /etc/dracut.conf.d &&
+			! grep -qr '^hostonly_cmdline=.*yes' /etc/dracut.conf.d; then
 			return 1
 		fi
 	fi
@@ -66,6 +72,10 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "to using /proc/cmdline, which is generally not what you"
 			echo "want. Exiting..."
 			echo ""
+			echo "Please specify a command line to use in /etc/cmdline or"
+			echo "/etc/cmdline.d/. Or set the kernel_cmdline in a dracut"
+			echo "configuration file."
+			echo ""
 			echo "Override this check with:"
 			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
 			echo ""
@@ -80,6 +90,8 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "configuration to fallback to using /proc/cmdline, which is"
 			echo "generally not what you want. Exiting..."
 			echo ""
+			echo "Please specify a command line to use in /etc/kernel/cmdline."
+			echo ""
 			echo "Override this check with:"
 			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
 			echo ""
@@ -92,6 +104,9 @@ if [ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]; then
 			echo "cmdline for ukify was configured. Ukify would fallback"
 			echo "to using /proc/cmdline, which is generally not what you"
 			echo "want. Exiting..."
+			echo ""
+			echo "Please specify a command line to use in /etc/kernel/cmdline"
+			echo "or set the Cmdline= option in /etc/kernel/uki.conf."
 			echo ""
 			echo "Override this check with:"
 			echo "    touch /etc/kernel/preinst.d/05-check-chroot.install"
