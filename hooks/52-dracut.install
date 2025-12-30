@@ -57,7 +57,7 @@ main() {
 	if [[ ${INSTALLKERNEL_INITRD_GENERATOR} == dracut ]]; then
 		if [[ ${INSTALLKERNEL_UKI_GENERATOR} == dracut ]]; then
 			einfo "Using dracut as the initramfs and UKI generator..."
-			initramfs_gen_args+=( --uefi )
+			initramfs_gen_args+=( --uefi --no-ukify )
 			out=uki.efi
 		else
 			einfo "Using dracut as the initramfs generator..."

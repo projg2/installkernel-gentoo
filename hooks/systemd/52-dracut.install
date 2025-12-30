@@ -36,7 +36,7 @@ if [[ ${KERNEL_INSTALL_INITRD_GENERATOR} == dracut ]]; then
     if [[ ${KERNEL_INSTALL_UKI_GENERATOR} == dracut ]]; then
         # We are chosen to generate the UKI as well as initrd
         IMAGE=uki.efi
-        INITRAMFS_GEN_ARGS+=( --uefi )
+        INITRAMFS_GEN_ARGS+=( --uefi --no-ukify )
     else
         # We are the initrd generator
         IMAGE=initrd
