@@ -24,16 +24,18 @@ _test_dracut_cmdline() {
 		fi
 	fi
 
-	if [ -d /etc/dracut.conf.d ]; then
-		if grep -qr '^kernel_cmdline=' /etc/dracut.conf.d; then
-			return 1
-		elif grep -qr '^hostonly_cmdline=.*no' /etc/dracut.conf.d; then
-			return 1
-		elif grep -qr '^hostonly=.*no' /etc/dracut.conf.d &&
-			! grep -qr '^hostonly_cmdline=.*yes' /etc/dracut.conf.d; then
-			return 1
-		fi
-	fi
+	for dir in /etc/dracut.conf.d /usr/lib/dracut/dracut.conf.d; do
+			if [ -d ${dir} ]; then
+					if grep -q '^kernel_cmdline=' ${dir}/*.conf; then
+							return 1
+					elif grep -q '^hostonly_cmdline=.*no' ${dir}/*.conf; then
+							return 1
+					elif grep -q '^hostonly=.*no' ${dir}/*.conf &&
+							! grep -q '^hostonly_cmdline=.*yes' ${dir}/*.conf; then
+							return 1
+					fi
+			fi
+	done
 
 	return 0
 }
