@@ -138,3 +138,21 @@ INSTALLKERNEL_UKI_GENERATOR
 respectively. If the environment variable
 .B INSTALLKERNEL_CONF_ROOT
 is set, then the install.conf at this location is used instead.
+.P
+Drop-in files may also be used to partially override the settings. The syntax
+for drop-in files is the same as that for install.conf. However, a drop-in file
+need not define all these settings; it just needs to define settings that
+override install.conf. Each drop-in file should have filename suffix ".conf".
+.P
+Drop-in files should be placed in one of these directories
+.IR /etc/kernel/install.conf.d/
+.IR /run/kernel/install.conf.d/
+.IR /usr/local/lib/kernel/install.conf.d/
+.IR /usr/lib/kernel/install.conf.d/.
+Drop-in files in directories listed earlier override files with the same name
+in directories listed later. Multiple drop-in files with different names are
+applied in lexicographic order, regardless of which directory they reside in.
+If the environment variable
+.B INSTALLKERNEL_CONF_ROOT
+is set, then the install.conf.d directory at this location is used instead, and
+no other directory is used.
