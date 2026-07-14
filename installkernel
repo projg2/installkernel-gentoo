@@ -515,39 +515,39 @@ if [ ${has_read_conf} -ne 1 ]; then
 	exit 1
 fi
 
-	if [ -n "${layout}" ]; then
-		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "Read configuration layout=${layout}"
-		fi
-		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
-			INSTALLKERNEL_LAYOUT="${layout}"
-		fi
-	else
-		echo "No layout= configured by ${install_conf}"
-		exit 1
+if [ -n "${layout}" ]; then
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "Read configuration layout=${layout}"
 	fi
-	if [ -n "${initrd_generator}" ]; then
-		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "Read configuration initrd_generator=${initrd_generator}"
-		fi
-		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
-			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
-		fi
-	else
-		echo "No initrd_generator= configured by ${install_conf}"
-		exit 1
+	if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
+		INSTALLKERNEL_LAYOUT="${layout}"
 	fi
-	if [ -n "${uki_generator}" ]; then
-		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "Read configuration uki_generator=${uki_generator}"
-		fi
-		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
-			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
-		fi
-	else
-		echo "No uki_generator= configured by ${install_conf}"
-		exit 1
+else
+	echo "No layout= configured by ${install_conf}"
+	exit 1
+fi
+if [ -n "${initrd_generator}" ]; then
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "Read configuration initrd_generator=${initrd_generator}"
 	fi
+	if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
+		INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
+	fi
+else
+	echo "No initrd_generator= configured by ${install_conf}"
+	exit 1
+fi
+if [ -n "${uki_generator}" ]; then
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "Read configuration uki_generator=${uki_generator}"
+	fi
+	if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
+		INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
+	fi
+else
+	echo "No uki_generator= configured by ${install_conf}"
+	exit 1
+fi
 
 export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
