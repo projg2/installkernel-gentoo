@@ -134,6 +134,22 @@ dropindirs_sort() {
     done
 }
 
+# Used to find drop-in files for install.conf
+dropinconfs_sort() {
+    for d; do
+        for i in "${d}/"*.conf; do
+            [ -e "${i}" ] && echo "${i##*/}"
+        done
+    done | sort -Vu | while read -r f; do
+        for d; do
+			if [ -e "${d}/${f}" ]; then
+				echo "${d}/${f}"
+				continue 2
+			fi
+        done
+    done
+}
+
 # Create backups of older versions before installing
 updatever() {
 	oldsuffix="${3}.old"
@@ -440,7 +456,10 @@ main() {
 	return 0
 }
 
-# Find and read the install.conf
+# Read configuration
+has_read_conf=0
+
+# First find and read the install.conf
 if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
 	install_conf="${INSTALLKERNEL_CONF_ROOT}/install.conf"
 elif [ -f /etc/kernel/install.conf ]; then
@@ -461,10 +480,44 @@ if [ -f "${install_conf}" ]; then
 	fi
 	# shellcheck source=/dev/null
 	. "${install_conf}"
+	has_read_conf=1
+else
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "No install.conf found at ${install_conf}"
+	fi
+fi
+
+# Read drop-in files for install.conf
+if [ -n "${INSTALLKERNEL_CONF_ROOT}" ]; then
+	# Don't read drop-ins in other directories;
+	# this behavior is consistent with kernel-install
+	dropins="$(dropinconfs_sort "${INSTALLKERNEL_CONF_ROOT}/install.conf.d")"
+else
+	dropins="$(
+		dropinconfs_sort \
+		"/etc/kernel/install.conf.d" \
+		"/run/kernel/install.conf.d" \
+		"/usr/local/lib/kernel/install.conf.d" \
+		"/usr/lib/kernel/install.conf.d"
+	)"
+fi
+for dropin in ${dropins}; do
+	if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
+		echo "Reading drop-in file ${dropin}..."
+	fi
+	# shellcheck source=/dev/null
+	. "${dropin}"
+	has_read_conf=1
+done
+
+if [ ${has_read_conf} -ne 1 ]; then
+	echo "No install.conf found at ${install_conf}, and no drop-in file found"
+	exit 1
+fi
 
 	if [ -n "${layout}" ]; then
 		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "${install_conf} configures layout=${layout}"
+			echo "Read configuration layout=${layout}"
 		fi
 		if [ -z "${INSTALLKERNEL_LAYOUT}" ]; then
 			INSTALLKERNEL_LAYOUT="${layout}"
@@ -475,7 +528,7 @@ if [ -f "${install_conf}" ]; then
 	fi
 	if [ -n "${initrd_generator}" ]; then
 		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "${install_conf} configures initrd_generator=${initrd_generator}"
+			echo "Read configuration initrd_generator=${initrd_generator}"
 		fi
 		if [ -z "${INSTALLKERNEL_INITRD_GENERATOR}" ]; then
 			INSTALLKERNEL_INITRD_GENERATOR="${initrd_generator}"
@@ -486,7 +539,7 @@ if [ -f "${install_conf}" ]; then
 	fi
 	if [ -n "${uki_generator}" ]; then
 		if [ "${INSTALLKERNEL_VERBOSE}" -gt 0 ]; then
-			echo "${install_conf} configures uki_generator=${uki_generator}"
+			echo "Read configuration uki_generator=${uki_generator}"
 		fi
 		if [ -z "${INSTALLKERNEL_UKI_GENERATOR}" ]; then
 			INSTALLKERNEL_UKI_GENERATOR="${uki_generator}"
@@ -495,10 +548,6 @@ if [ -f "${install_conf}" ]; then
 		echo "No uki_generator= configured by ${install_conf}"
 		exit 1
 	fi
-else
-	echo "No install.conf found at ${install_conf}"
-	exit 1
-fi
 
 export INSTALLKERNEL_LAYOUT
 export INSTALLKERNEL_INITRD_GENERATOR
